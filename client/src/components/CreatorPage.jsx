@@ -10,7 +10,7 @@ const CreatorPage = () => {
       <div className="h-2/12 w-10/12 py-5 text-white text-2xl flex justify-between">
         <div className="flex">
           <a
-            href="https://linktr.ee/grizzlypng"
+            href={creator.link}
             className="hover:bg-sky-400 rounded-full p-1 duration-300"
           >
             <img
@@ -22,7 +22,7 @@ const CreatorPage = () => {
             <header className="mb-3 text-5xl">
               <a
                 className="hover:bg-sky-500 duration-300 rounded-lg"
-                href="https://grizzlypng.carrd.co/"
+                href={creator.link}
               >
                 {creator.name}
               </a>
@@ -60,7 +60,6 @@ const CreatorPage = () => {
               Login (Devs Only)
             </Link>
           )} */}
-          <p>Show buttons based on role</p>
         </div>
       </div>
       <div className="scrollbar w-10/12 py-5 text-white text-2xl overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-5">
