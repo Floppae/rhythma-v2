@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 
 const app = express();
+app.use(cors());
+app.use(express.json());
 const port = process.env.DB_PORT;
 
 const db = new pg.Client({
@@ -16,9 +18,6 @@ const db = new pg.Client({
 });
 
 db.connect();
-
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static("public"));
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
