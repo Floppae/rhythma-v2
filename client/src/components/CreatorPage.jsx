@@ -6,6 +6,7 @@ const CreatorPage = () => {
   //useLocation is used to access the state passed from the Home component when we call handleClick
   const location = useLocation();
   const { creator } = location.state || {};
+  const uid = creator.uid;
   const [maps, setMaps] = useState([]);
   const [mapDetails, setMapDetails] = useState({});
 
@@ -64,6 +65,8 @@ const CreatorPage = () => {
         title,
         coverUrl: creator.pfp,
         creator: creator.name,
+        beatmapLink: mediaFireLink,
+        uid: uid,
       };
     }
     return null;
@@ -93,10 +96,11 @@ const CreatorPage = () => {
 
     try {
       //console.log("Making API request...");
+
       const response = await axios.get(
         "http://localhost:4000/getBeatmapDetails",
         {
-          params: { beatmapSetId },
+          params: { beatmapSetId, uid, beatmapLink },
         }
       );
       return response.data;
