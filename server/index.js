@@ -8,7 +8,7 @@ dotenv.config({ path: ".env.local" });
 const app = express();
 app.use(cors());
 app.use(express.json());
-const port = 3000;
+const port = 4000;
 
 const db = new pg.Client({
   user: process.env.DB_USER,
