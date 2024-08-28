@@ -93,9 +93,12 @@ const CreatorPage = () => {
 
     try {
       //console.log("Making API request...");
-      const response = await axios.get("/getBeatmapDetails", {
-        params: { beatmapSetId },
-      });
+      const response = await axios.get(
+        "http://localhost:4000/getBeatmapDetails",
+        {
+          params: { beatmapSetId },
+        }
+      );
       return response.data;
     } catch (error) {
       console.error("Error fetching beatmap details:", error);
@@ -108,7 +111,7 @@ const CreatorPage = () => {
   }, []);
   useEffect(() => {
     getMapDetails();
-  }, []);
+  }, [maps]);
 
   console.log("maps", maps);
   console.log("map details", mapDetails);

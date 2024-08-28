@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import pg from "pg";
 import dotenv from "dotenv";
 import cors from "cors";
+import axios from "axios";
 dotenv.config({ path: ".env.local" });
 
 const app = express();
@@ -67,8 +68,7 @@ app.get("/getBeatmapDetails", async (req, res) => {
   //   params: { beatmapSetId },
   // });
   //Now, we can do searchParams.get("beatmapSetId") to extract setId from the url
-  const { searchParams } = new URL(request.url);
-  const beatmapSetId = searchParams.get("beatmapSetId");
+  const beatmapSetId = req.query.beatmapSetId;
 
   //Quick check to make sure we got the beatmapSetId
   if (!beatmapSetId) {
@@ -90,23 +90,28 @@ app.get("/getBeatmapDetails", async (req, res) => {
 
     //Checking if we successfully got the beatmap details
     if (beatmap) {
-      return res.json(
-        {
-          title: beatmap.title,
-          creator: beatmap.creator,
-          artist: beatmap.artist,
-          coverUrl: `https://assets.ppy.sh/beatmaps/${beatmap.beatmapset_id}/covers/cover.jpg`,
-        },
-        { status: 200 }
-      );
+      return res.status(200).json({
+        title: beatmap.title,
+        creator: beatmap.creator,
+        artist: beatmap.artist,
+        coverUrl: `https://assets.ppy.sh/beatmaps/${beatmap.beatmapset_id}/covers/cover.jpg`,
+      });
     } else {
-      return res.json(
-        { error: "Beatmap Retrieval Unsuccessful" },
-        { status: 404 }
-      );
+      return res.status(404).json({ error: "Beatmap Retrieval Unsuccessful" });
     }
   } catch (error) {
-    return res.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("Error fetching beatmap details:", {
+      message: error.message,
+      stack: error.stack,
+      config: error.config,
+      response: error.response
+        ? {
+            status: error.response.status,
+            data: error.response.data,
+          }
+        : "No response from osu! API",
+    });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
