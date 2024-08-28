@@ -39,6 +39,7 @@ app.post("/maps", async (req, res) => {
     res.status(500).send("Server error");
   }
 });
+
 app.get("/admins", async (req, res) => {
   //grabs employee uid
   //returns
@@ -56,6 +57,56 @@ app.get("/admins", async (req, res) => {
   } catch (error) {
     console.error("Error fetching admins:", error);
     res.status(500).send("Server error");
+  }
+});
+
+app.get("/getBeatmapDetails", async (req, res) => {
+  //searchParams is a propety of URL object
+  //searchParams allows us to use .get to grab parameters we set when we called this endpoint
+  // const response = await axios.get("/getBeatmapDetails", {
+  //   params: { beatmapSetId },
+  // });
+  //Now, we can do searchParams.get("beatmapSetId") to extract setId from the url
+  const { searchParams } = new URL(request.url);
+  const beatmapSetId = searchParams.get("beatmapSetId");
+
+  //Quick check to make sure we got the beatmapSetId
+  if (!beatmapSetId) {
+    res.json({ error: "Beatmap Retrieval Unsuccessful" }, { status: 404 });
+  }
+
+  const apiKey = process.env.OSU_API_KEY;
+  //Initializing base url and parameters to access osu api
+  const url = "https://osu.ppy.sh/api/get_beatmaps";
+  const params = {
+    k: apiKey,
+    s: beatmapSetId,
+  };
+
+  try {
+    //Running axios HTTP GET request with base url and parameters to get beatmap details
+    const response = await axios.get(url, { params });
+    const beatmap = response.data[0];
+
+    //Checking if we successfully got the beatmap details
+    if (beatmap) {
+      return res.json(
+        {
+          title: beatmap.title,
+          creator: beatmap.creator,
+          artist: beatmap.artist,
+          coverUrl: `https://assets.ppy.sh/beatmaps/${beatmap.beatmapset_id}/covers/cover.jpg`,
+        },
+        { status: 200 }
+      );
+    } else {
+      return res.json(
+        { error: "Beatmap Retrieval Unsuccessful" },
+        { status: 404 }
+      );
+    }
+  } catch (error) {
+    return res.json({ error: "Internal Server Error" }, { status: 500 });
   }
 });
 
