@@ -19,13 +19,13 @@ const Home = () => {
     {
       name: "Grizzlypng",
       pfp: grizzly,
-      uid: 456,
+      uid: process.env.REACT_APP_GRIZZLYUID,
       link: "https://linktr.ee/grizzlypng",
     },
     {
       name: "Davolaf",
       pfp: davolaf,
-      uid: 789,
+      uid: process.env.REACT_APP_DAVOLAFUID,
       link: "https://linktr.ee/davolaf",
     },
     {
