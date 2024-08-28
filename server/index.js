@@ -69,6 +69,8 @@ app.get("/getBeatmapDetails", async (req, res) => {
   // });
   //Now, we can do searchParams.get("beatmapSetId") to extract setId from the url
   const beatmapSetId = req.query.beatmapSetId;
+  const uid = req.query.uid;
+  const beatmapLink = req.query.beatmapLink;
 
   //Quick check to make sure we got the beatmapSetId
   if (!beatmapSetId) {
@@ -95,6 +97,8 @@ app.get("/getBeatmapDetails", async (req, res) => {
         creator: beatmap.creator,
         artist: beatmap.artist,
         coverUrl: `https://assets.ppy.sh/beatmaps/${beatmap.beatmapset_id}/covers/cover.jpg`,
+        uid: uid,
+        beatmapLink: beatmapLink,
       });
     } else {
       return res.status(404).json({ error: "Beatmap Retrieval Unsuccessful" });
