@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
+import Card from "./Card";
 
 const CreatorPage = () => {
   //useLocation is used to access the state passed from the Home component when we call handleClick
   const location = useLocation();
   const { creator } = location.state || {};
+  //{Creator} will be whichever creator object was passed in (clicked on) from the home page
+  //Ex) If grizzlypng was clicked on, all information from the creators object in Home.jsx about grizzlypng will be sent in
   const uid = creator.uid;
   const [maps, setMaps] = useState([]);
   const [mapDetails, setMapDetails] = useState({});
+  //Initialize variables
+  //uid is the id of The creator from firebase that we will use to index our pg database
+  //maps will store map links
+  //mapDetails will store the details of a map based on the corresponding index of maps
 
   async function getMaps() {
     try {
@@ -19,8 +26,9 @@ const CreatorPage = () => {
       const mapList = [];
       mapLinks.forEach((mapLink, index) => {
         const isMediaFire = mapLink.includes("mediafire.com");
+        const id = index;
         mapList.push({
-          index,
+          id,
           isMediaFire,
           mapLink,
         });
@@ -34,9 +42,11 @@ const CreatorPage = () => {
     }
   }
 
+  //Iterates through the maps list and propogates mapDetails (filtering through osu maps and mediafire maps)
   async function getMapDetails() {
     const details = {};
-    maps.forEach(async (map) => {
+
+    const detailPromises = maps.map(async (map) => {
       let detail;
       if (map.isMediaFire) {
         console.log("media fire map hit");
@@ -45,11 +55,25 @@ const CreatorPage = () => {
         console.log("osu map hit");
         detail = await getOsuDetails(map.mapLink);
       }
+
       if (detail) {
-        details[map.index] = detail;
+        details[map.id] = detail; // Add the detail to the object
       }
     });
-    setMapDetails(details);
+
+    await Promise.all(detailPromises);
+    //THIS LINE IS EXTREMELY IMPORTANT
+    //Code was only showing mediafiremaps because my await function call to get osu map details wasnt firing quick enough
+    //This is because forEach deos not wait for async operations to complete, so setMapDetails was firing before waiting for data from osu api route
+    //By using Promise.all() we can now wait for all async function to complete before proceeding with our setMapDetails hook
+    //Promise.all takes an array of promises and resolves when all promises have resolved, if any fail, this will reject
+    //When testing, I had an array of 2 promises and a media fire map. Promise.all resolved this issue
+
+    // Combine new details with the existing state
+    setMapDetails((prevDetails) => ({
+      ...prevDetails,
+      ...details,
+    }));
   }
 
   //function to handle mediafire map details
@@ -178,17 +202,15 @@ const CreatorPage = () => {
         </div>
       </div>
       <div className="scrollbar w-10/12 py-5 text-white text-2xl overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* {filteredMaps.map(({ name, mapLink }, index) => (
+        {maps.map(({ id, mapLink }, index) => (
           <Card
-            details={mapDetails[name]}
+            details={mapDetails[id]}
             key={index}
             index={index}
-            name={name}
+            name={id}
             mapLink={mapLink}
-            role={role}
-            handleDeleteMap={handleDeleteMap}
           />
-        ))} */}
+        ))}
         <p>All Maps Here</p>
       </div>
     </div>
