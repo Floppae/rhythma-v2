@@ -35,7 +35,7 @@ function Card(props) {
           <div>
             {props.role === "admin" && (
               <button
-                onClick={() => props.handleDeleteMap(props.name)}
+                onClick={() => props.handleDeleteMap(props.mapLink)}
                 className="bg-red-500 text-white p-2 rounded-lg"
               >
                 Delete

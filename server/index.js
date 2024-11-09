@@ -41,6 +41,29 @@ app.post("/maps", async (req, res) => {
   }
 });
 
+//add map
+app.post("/add", async (req, res) => {
+  const { uid, mapLink } = req.body;
+  await db.query("INSERT INTO maps (user_id, map_link) VALUES ($1,$2)", [
+    uid,
+    mapLink,
+  ]);
+});
+
+app.delete("/delete", async (req, res) => {
+  const { mapLink, uid } = req.body;
+  try {
+    await db.query("DELETE FROM maps WHERE user_id = $1 AND map_link = $2", [
+      uid,
+      mapLink,
+    ]);
+    res.status(200).json({ message: "Entry deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting entry:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 app.get("/admins", async (req, res) => {
   //grabs employee uid
   //returns
