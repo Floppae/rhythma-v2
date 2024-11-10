@@ -3,7 +3,8 @@ import { useLocation } from "react-router-dom";
 import { auth } from "../firebase";
 import axios from "axios";
 import Card from "./Card";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import Rhythma from "../../src/assets/Rhythma.png";
 
 const CreatorEditPage = () => {
   const [uid, setUid] = useState(localStorage.getItem("uid"));
@@ -19,8 +20,10 @@ const CreatorEditPage = () => {
       if (user) {
         setUid(user.uid);
         localStorage.setItem("uid", user.uid);
+        console.log("USER LOGGED IN", uid);
       } else {
         setUid(null);
+        console.log("USER NOT LOGGED IN");
       }
     });
   });
@@ -30,9 +33,9 @@ const CreatorEditPage = () => {
       const response = await axios.post("http://localhost:4000/maps", {
         uid,
       });
-      console.log("UID", uid);
+      // console.log("UID", uid);
       const mapLinks = response.data.map((mapEntry) => mapEntry.map_link);
-      console.log(mapLinks);
+      // console.log(mapLinks);
       const mapList = [];
       mapLinks.forEach((mapLink, index) => {
         const isMediaFire = mapLink.includes("mediafire.com");
@@ -46,7 +49,7 @@ const CreatorEditPage = () => {
       });
       setMaps(mapList);
       //Each object in the mapList array has 2 properties, the mapLink and a boolean if link contains mediafire
-      console.log(maps);
+      // console.log(maps);
       //allMaps is now an array with maplinks
       //Iterate through allMaps, if osu link call osu api, otherwise mediafire
     } catch (error) {
@@ -61,10 +64,10 @@ const CreatorEditPage = () => {
     const detailPromises = maps.map(async (map) => {
       let detail;
       if (map.isMediaFire) {
-        console.log("media fire map hit");
+        // console.log("media fire map hit");
         detail = getMediaFireDetails(map.mapLink);
       } else {
-        console.log("osu map hit");
+        // console.log("osu map hit");
         detail = await getOsuDetails(map.mapLink);
       }
 
@@ -123,7 +126,7 @@ const CreatorEditPage = () => {
   //function to handle osu map details
   async function getOsuDetails(beatmapLink) {
     const beatmapSetId = extractBeatmapSetId(beatmapLink);
-    console.log("beatmapsetID", beatmapSetId);
+    // console.log("beatmapsetID", beatmapSetId);
 
     if (!beatmapSetId) {
       console.error("Invalid beatmap link:", beatmapLink);
@@ -153,11 +156,19 @@ const CreatorEditPage = () => {
       mapLink.match(/\/file\/[^\/]+\/([^-]+)-(.+)\.osz\/file/)
     ) {
       const uid = auth.currentUser?.uid;
-      await axios
-        .post("http://localhost:4000/add", { uid, mapLink })
-        .then((response) => {
-          console.log(response.data.message);
-        });
+      if (!uid) {
+        console.error("User not authenticated");
+        return;
+      }
+      try {
+        axios
+          .post("http://localhost:4000/add", { uid, mapLink })
+          .then((response) => {
+            console.log(response);
+          });
+      } catch (error) {
+        console.error("Error adding map", error);
+      }
       getMaps();
     } else {
       alert("Beatmap link invalid");
@@ -165,18 +176,23 @@ const CreatorEditPage = () => {
     }
   }
 
-  function handleLogout(beatmapLink) {}
+  async function handleLogout() {
+    console.log("Signing user out:", auth.currentUser.uid);
+    await signOut(auth);
+    window.location.href = "/";
+  }
 
   async function handleDeleteMap(mapLink) {
     //Query database to delete entry where uid and beatmap link = uid and beatmapLink
+    //Quick check to see if a user is signed in
     const uid = auth.currentUser?.uid;
     if (!uid) {
       console.error("User not authenticated");
       return;
     }
-    await axios
-      .delete("http://localhost:4000/delete", { data: { uid, mapLink } })
-      .then((response) => console.log(response.data.message));
+    await axios.delete("http://localhost:4000/delete", {
+      data: { uid, mapLink },
+    });
     getMaps();
   }
 
@@ -187,31 +203,19 @@ const CreatorEditPage = () => {
     getMapDetails();
   }, [maps]);
 
-  console.log("maps", maps);
-  console.log("map details", mapDetails);
+  // console.log("maps", maps);
+  // console.log("map details", mapDetails);
 
   return (
     <div className="w-screen h-screen bg-neutral-900 flex flex-col items-center">
       <div className="h-2/12 w-10/12 py-5 text-white text-2xl flex justify-between">
         <div className="flex">
-          <a
-            // href={creator.link}
-            className="hover:bg-sky-400 rounded-full p-1 duration-300"
-          >
-            <img
-              // src={creator.pfp}
-              className="border-2 border-sky-400 h-32 w-32 rounded-full"
-            />
-          </a>
+          <img
+            src={Rhythma}
+            className="border-2 border-white h-32 w-32 rounded-full"
+          />
           <div className="content-center">
-            <header className="mb-3 text-5xl">
-              <a
-                className="hover:bg-sky-500 duration-300 rounded-lg"
-                // href={creator.link}
-              >
-                {/* {creator.name} */}
-              </a>
-            </header>
+            <header className="mb-3 text-5xl"></header>
             {/* <input
               value={search}
               placeholder="Search Beatmaps"
@@ -249,7 +253,6 @@ const CreatorEditPage = () => {
             handleDeleteMap={handleDeleteMap}
           />
         ))}
-        <p>All Maps Here</p>
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ function Card(props) {
     >
       {props.details && (
         <>
-          <div className="border-2 border-sky-500 flex-none w-32 h-32 rounded-lg overflow-hidden">
+          <div className="border-2 border-white flex-none w-32 h-32 rounded-lg overflow-hidden">
             {props.details.coverUrl && (
               <img
                 src={props.details.coverUrl}
@@ -21,7 +21,7 @@ function Card(props) {
           <div className="h-full ml-5 text-center">
             <a
               href={props.mapLink}
-              className="text-3xl hover:bg-sky-500 duration-300 rounded-lg"
+              className="text-2xl hover:bg-neutral-400 duration-300 rounded-lg"
             >
               {props.details.title}
             </a>
@@ -36,7 +36,7 @@ function Card(props) {
             {props.role === "admin" && (
               <button
                 onClick={() => props.handleDeleteMap(props.mapLink)}
-                className="bg-red-500 text-white p-2 rounded-lg"
+                className="bg-red-500 rounded-lg h-32 w-32"
               >
                 Delete
               </button>

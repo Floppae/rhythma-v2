@@ -154,7 +154,7 @@ const CreatorPage = () => {
           >
             <img
               src={creator.pfp}
-              className="border-2 border-sky-400 h-32 w-32 rounded-full"
+              className="border-2 border-white h-32 w-32 rounded-full"
             />
           </a>
           <div className="content-center">
@@ -211,7 +211,6 @@ const CreatorPage = () => {
             mapLink={mapLink}
           />
         ))}
-        <p>All Maps Here</p>
       </div>
     </div>
   );
