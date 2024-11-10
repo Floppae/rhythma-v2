@@ -145,12 +145,12 @@ const CreatorPage = () => {
   console.log("map details", mapDetails);
 
   return (
-    <div className="w-screen h-screen bg-neutral-900 flex flex-col items-center">
+    <div className="w-screen h-screen bg-gradient-to-r from-neutral-700 to-neutral-400 flex flex-col items-center">
       <div className="h-2/12 w-10/12 py-5 text-white text-2xl flex justify-between">
         <div className="flex">
           <a
             href={creator.link}
-            className="hover:bg-sky-400 rounded-full p-1 duration-300"
+            className="hover:bg-neutral-400 rounded-full p-1 duration-300"
           >
             <img
               src={creator.pfp}
@@ -160,7 +160,7 @@ const CreatorPage = () => {
           <div className="content-center">
             <header className="mb-3 text-5xl">
               <a
-                className="hover:bg-sky-500 duration-300 rounded-lg"
+                className="hover:bg-neutral-400 duration-300 rounded-lg"
                 href={creator.link}
               >
                 {creator.name}

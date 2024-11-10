@@ -5,11 +5,11 @@ function Card(props) {
   return (
     <div
       key={props.index}
-      className="w-full py-5 flex justify-between mb-10 bg-neutral-800 rounded-lg h-32 content-center items-center overflow-hidden"
+      className="w-full py-5 flex justify-between mb-10 bg-gradient-to-r from-neutral-800 via-neutral-700 to-neutral-800 rounded-lg h-32 content-center items-center overflow-hidden"
     >
       {props.details && (
         <>
-          <div className="border-2 border-white flex-none w-32 h-32 rounded-lg overflow-hidden">
+          <div className="flex-none w-32 h-32 rounded-lg overflow-hidden">
             {props.details.coverUrl && (
               <img
                 src={props.details.coverUrl}
