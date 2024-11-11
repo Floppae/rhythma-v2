@@ -1,7 +1,7 @@
 import React from "react";
 
 function Card(props) {
-  console.log("DETAILS", props.details);
+  // console.log("DETAILS", props.details);
   return (
     <div
       key={props.index}

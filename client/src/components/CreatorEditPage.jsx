@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import axios from "axios";
 import Card from "./Card";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import {
+  browserLocalPersistence,
+  getIdTokenResult,
+  onAuthStateChanged,
+  setPersistence,
+  signOut,
+} from "firebase/auth";
 import Rhythma from "../../src/assets/Rhythma.png";
 
 const CreatorEditPage = () => {
-  const [uid, setUid] = useState(localStorage.getItem("uid"));
+  const [uid, setUid] = useState(null);
   const [maps, setMaps] = useState([]);
   const [mapDetails, setMapDetails] = useState({});
+  const navigate = useNavigate();
   //Initialize variables
   //uid is the id of The creator from firebase that we will use to index our pg database
   //maps will store map links
@@ -19,16 +26,18 @@ const CreatorEditPage = () => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUid(user.uid);
-        localStorage.setItem("uid", user.uid);
-        console.log("USER LOGGED IN", uid);
+        getMaps(user.uid);
+        console.log("UID SET ", user.uid);
       } else {
         setUid(null);
-        console.log("USER NOT LOGGED IN");
+        navigate("/login"); // Redirect to login if not authenticated
+        console.log("UID NULL");
       }
     });
-  });
+    return () => unsubscribe();
+  }, [navigate]);
 
-  async function getMaps() {
+  async function getMaps(uid) {
     try {
       const response = await axios.post("http://localhost:4000/maps", {
         uid,
@@ -154,25 +163,27 @@ const CreatorEditPage = () => {
     if (!mapLink) {
       return;
     }
+
     if (
       mapLink.match(/beatmapsets\/(\d+)/) ||
       mapLink.match(/\/file\/[^\/]+\/([^-]+)-(.+)\.osz\/file/)
     ) {
-      const uid = auth.currentUser?.uid;
-      if (!uid) {
-        console.error("User not authenticated");
-        return;
+      const idToken = await auth.currentUser.getIdToken();
+      if (!idToken) {
+        alert("User not authenticated");
+        window.location.href = "/";
       }
       try {
-        axios
-          .post("http://localhost:4000/add", { uid, mapLink })
-          .then((response) => {
-            console.log(response);
-          });
+        console.log("ADD MAP IDTOKEN", idToken);
+        await axios.post(
+          "http://localhost:4000/add",
+          { mapLink },
+          { headers: { Authorization: `Bearer ${idToken}` } }
+        );
       } catch (error) {
         console.error("Error adding map", error);
       }
-      getMaps();
+      getMaps(uid);
     } else {
       alert("Beatmap link invalid");
       return;
@@ -188,15 +199,22 @@ const CreatorEditPage = () => {
   async function handleDeleteMap(mapLink) {
     //Query database to delete entry where uid and beatmap link = uid and beatmapLink
     //Quick check to see if a user is signed in
-    const uid = auth.currentUser?.uid;
-    if (!uid) {
-      console.error("User not authenticated");
-      return;
+    const idToken = await auth.currentUser.getIdToken();
+    if (!idToken) {
+      alert("User not authenticated");
+      window.location.href = "/";
     }
-    await axios.delete("http://localhost:4000/delete", {
-      data: { uid, mapLink },
-    });
-    getMaps();
+
+    try {
+      console.log("DELETE MAP IDTOKEN", idToken);
+      await axios.delete("http://localhost:4000/delete", {
+        headers: { Authorization: `Bearer ${idToken}` },
+        data: { mapLink },
+      });
+      getMaps(uid);
+    } catch (error) {
+      console.error("Error deleting map: ", error);
+    }
   }
 
   useEffect(() => {

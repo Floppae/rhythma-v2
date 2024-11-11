@@ -4,6 +4,13 @@ import pg from "pg";
 import dotenv from "dotenv";
 import cors from "cors";
 import axios from "axios";
+import admin from "firebase-admin";
+import service from "./service.json" assert { type: "json" };
+
+admin.initializeApp({
+  credential: admin.credential.cert(service),
+});
+
 dotenv.config({ path: ".env.local" });
 
 const app = express();
@@ -41,26 +48,65 @@ app.post("/maps", async (req, res) => {
   }
 });
 
-//add map
-app.post("/add", async (req, res) => {
-  const { uid, mapLink } = req.body;
-  await db.query("INSERT INTO maps (user_id, map_link) VALUES ($1,$2)", [
-    uid,
-    mapLink,
-  ]);
-});
+//middleware for incoming map modification requests
+async function verifyIdToken(req, res, next) {
+  const idToken = req.headers.authorization?.split("Bearer ")[1];
+  if (!idToken) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
-app.delete("/delete", async (req, res) => {
-  const { mapLink, uid } = req.body;
   try {
-    await db.query("DELETE FROM maps WHERE user_id = $1 AND map_link = $2", [
+    //verify token with firebase (Verifies the token was signed/distributed by firebase)
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    console.log("IDTOKEN", idToken);
+    req.uid = decodedToken.uid;
+    next();
+  } catch (error) {
+    console.error("Token Verification Failed", error);
+    return res.status(403).json({ error: "Forbidden" });
+  }
+}
+
+//add map
+app.post("/add", verifyIdToken, async (req, res) => {
+  const { mapLink } = req.body;
+
+  //req.uid is from middleware
+  const uid = req.uid;
+
+  //Authentication
+  const auth = await db.query(
+    "SELECT EXISTS (SELECT 1 FROM admins WHERE uid = $1)",
+    [uid]
+  );
+  if (auth.rows[0].exists) {
+    await db.query("INSERT INTO maps (user_id, map_link) VALUES ($1,$2)", [
       uid,
       mapLink,
     ]);
-    res.status(200).json({ message: "Entry deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting entry:", error);
-    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.delete("/delete", verifyIdToken, async (req, res) => {
+  const { mapLink } = req.body;
+  const uid = req.uid;
+
+  //Authentication
+  const auth = await db.query(
+    "SELECT EXISTS (SELECT 1 FROM admins WHERE uid = $1)",
+    [uid]
+  );
+  if (auth.rows[0].exists) {
+    try {
+      await db.query("DELETE FROM maps WHERE user_id = $1 AND map_link = $2", [
+        uid,
+        mapLink,
+      ]);
+      res.status(200).json({ message: "Entry deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting entry:", error);
+      res.status(500).json({ message: "Server error" });
+    }
   }
 });
 
