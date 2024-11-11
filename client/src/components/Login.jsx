@@ -37,7 +37,7 @@ function Login() {
   }
 
   return (
-    <div className="flex flex-col bg-neutral-900 w-screen h-screen flex justify-center items-center">
+    <div className="flex flex-col bg-gradient-to-r from-black via-neutral-600 to-black w-screen h-screen flex justify-center items-center">
       <div className="flex">
         <header className="text-3xl text-white mb-5">Developer Login</header>
       </div>
@@ -47,13 +47,13 @@ function Login() {
       >
         <input
           className="m-2 p-2 rounded-lg"
-          placeholder="email"
+          placeholder="Email"
           onChange={handleEmail}
           value={email}
         ></input>
         <input
           className="m-2 p-2 rounded-lg"
-          placeholder="password"
+          placeholder="Password"
           onChange={handlePassword}
           value={password}
         ></input>

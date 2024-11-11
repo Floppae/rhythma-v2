@@ -52,29 +52,25 @@ const Home = () => {
   }
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-r from-neutral-700 to-neutral-400 flex flex-col items-center justify-center">
-      <div className="text-white text-2xl shadow-[rgba(0,0,15,0.5)_-10px_5px_30px_10px] shadow-black bg-neutral-700 rounded-lg w-2/3 h-5/6">
-        <div className="w-full flex justify-between">
-          {/* <div className="flex w-1/4 h-72 items-center justify-center">
+    <div className="text-white w-screen min-h-screen bg-gradient-to-r from-black via-neutral-600 to-black flex flex-col items-center justify-center">
+      <div className="flex flex-col h-1/4 items-center w-full justify-center m-5 mt-10">
+        <h1 className="text-5xl">Rhythma</h1>
+        <p className="text-xl text-center mt-3">
+          Connecting Creators And Community Through Music
+        </p>
+      </div>
+      <div className="flex flex-col flex-grow w-3/4 text-white text-2xl shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black from-neutral-900 via-neutral-500 to-neutral-900 rounded-lg m-10 justify-center">
+        {/* <div className="flex w-1/4 h-72 items-center justify-center">
             <img className="w-48 rounded-full" src={Rhythma} />
           </div> */}
-          <div className="w-full h-72 flex flex-col justify-center items-center">
-            <div className="w-3/4 flex flex-col items-center justify-center">
-              <h1 className="text-5xl">Meet Our Creators</h1>
-              <p className="text-base text-center">
-                Rhythma brings together five of the most influential osu!
-                creators, with a combined audience of over 5 million
-                subscribers, to revolutionize how players and fans connect with
-                their favorite maps, music, and exclusive content.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 justify-items-center items-center p-5">
+        {/* <div className="flex flex-col justify-center items-center">
+          <h1>Meet our Creators</h1>
+        </div> */}
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 justify-items-center items-start p-10">
           {creators.map((creator, index) => (
             <button
               onClick={() => handleClick(creator)}
-              className="w-52 h-72 border-2 border-solid border-neutral-700 shadow-[rgba(0,0,15,0.5)_-10px_5px_10px_0px] shadow-black bg-neutral-500 rounded-lg flex flex-col items-center justify-center p-5 hover:bg-neutral-400 hover:-translate-y-3 duration-300"
+              className="w-52 h-72 border-2 border-solid border-neutral-900 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black bg-neutral-700 rounded-lg flex flex-col items-center justify-center p-5 hover:bg-neutral-400 hover:-translate-y-3 hover:shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] hover:shadow-white duration-300"
               key={index}
               name={creator.name}
               value={creator.uid}
@@ -89,6 +85,15 @@ const Home = () => {
             </button>
           ))}
         </div>
+      </div>
+      <div className="flex w-full justify-start pl-10 pb-10">
+        <p className="mr-1">Founders</p>
+        <button
+          className="hover:underline hover:-translate-y-1 underline-offset-8 duration-300"
+          onClick={handleLogin}
+        >
+          Log In Here
+        </button>
       </div>
     </div>
   );

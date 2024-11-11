@@ -145,7 +145,7 @@ const CreatorPage = () => {
   console.log("map details", mapDetails);
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-r from-neutral-700 to-neutral-400 flex flex-col items-center">
+    <div className="w-screen h-screen bg-gradient-to-r from-black via-neutral-600 to-black flex flex-col items-center">
       <div className="h-2/12 w-10/12 py-5 text-white text-2xl flex justify-between">
         <div className="flex">
           <a
@@ -201,7 +201,7 @@ const CreatorPage = () => {
           )} */}
         </div>
       </div>
-      <div className="scrollbar w-10/12 py-5 text-white text-2xl overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="w-10/12 py-5 text-white text-2xl overflow-auto grid grid-cols-1 md:grid-cols-2 gap-5">
         {maps.map(({ id, mapLink }, index) => (
           <Card
             details={mapDetails[id]}

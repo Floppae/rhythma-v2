@@ -151,6 +151,9 @@ const CreatorEditPage = () => {
 
   async function handleAddMap() {
     const mapLink = prompt("Enter a map link");
+    if (!mapLink) {
+      return;
+    }
     if (
       mapLink.match(/beatmapsets\/(\d+)/) ||
       mapLink.match(/\/file\/[^\/]+\/([^-]+)-(.+)\.osz\/file/)
@@ -207,7 +210,7 @@ const CreatorEditPage = () => {
   // console.log("map details", mapDetails);
 
   return (
-    <div className="w-screen h-screen bg-neutral-900 flex flex-col items-center">
+    <div className="w-screen h-screen bg-gradient-to-r from-black via-neutral-600 to-black flex flex-col items-center">
       <div className="h-2/12 w-10/12 py-5 text-white text-2xl flex justify-between">
         <div className="flex">
           <img

@@ -5,7 +5,7 @@ function Card(props) {
   return (
     <div
       key={props.index}
-      className="w-full py-5 flex justify-between mb-10 bg-gradient-to-r from-neutral-800 via-neutral-700 to-neutral-800 rounded-lg h-32 content-center items-center overflow-hidden"
+      className="w-full py-5 flex justify-between mb-10 bg-gradient-to-l from-black to-neutral-700 rounded-lg h-32 content-center items-center overflow-hidden shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px]"
     >
       {props.details && (
         <>
