@@ -53,13 +53,13 @@ const Home = () => {
 
   return (
     <div className="text-white w-screen min-h-screen bg-gradient-to-r from-black via-neutral-600 to-black flex flex-col items-center justify-center">
-      <div className="flex flex-col h-1/4 items-center w-full justify-center m-5 mt-10">
-        <h1 className="text-5xl">Rhythma</h1>
-        <p className="text-xl text-center mt-3">
+      <div className="flex flex-col w-1/3 h-1/4 items-center w-full justify-center p-5 mt-10 rounded-lg shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] border-2 border-solid border-neutral-500">
+        <h1 className="text-5xl text-neutral-400">Rhythma</h1>
+        <p className="text-xl text-center mt-3 text-neutral-400">
           Connecting Creators And Community Through Music
         </p>
       </div>
-      <div className="flex flex-col flex-grow w-3/4 text-white text-2xl shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black from-neutral-900 via-neutral-500 to-neutral-900 rounded-lg m-10 justify-center">
+      <div className="flex flex-col flex-grow w-3/4 text-neutral-400 text-2xl shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black from-neutral-900 via-neutral-500 to-neutral-900 rounded-lg m-10 justify-center border-2 border-solid border-neutral-500">
         {/* <div className="flex w-1/4 h-72 items-center justify-center">
             <img className="w-48 rounded-full" src={Rhythma} />
           </div> */}
@@ -70,13 +70,13 @@ const Home = () => {
           {creators.map((creator, index) => (
             <button
               onClick={() => handleClick(creator)}
-              className="w-52 h-72 border-2 border-solid border-neutral-900 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black bg-neutral-700 rounded-lg flex flex-col items-center justify-center p-5 hover:bg-neutral-400 hover:-translate-y-3 hover:shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] hover:shadow-white duration-300"
+              className="w-52 h-72 border-2 border-solid border-neutral-500 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black bg-gradient-to-r from-black via-neutral-600 to-black rounded-lg flex flex-col items-center justify-center p-5 hover:bg-neutral-400 hover:-translate-y-3 hover:shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] hover:shadow-white duration-300 hover:text-white"
               key={index}
               name={creator.name}
               value={creator.uid}
             >
               <img
-                className="w-full object-cover rounded-full border-solid border-2 border-neutral-700"
+                className="w-full object-cover rounded-full border-solid border-2 border-neutral-500"
                 src={creator.pfp}
                 alt="creator image"
               ></img>
