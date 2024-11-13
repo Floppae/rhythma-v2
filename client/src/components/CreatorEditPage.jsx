@@ -21,11 +21,9 @@ const CreatorEditPage = () => {
       if (user) {
         setUid(user.uid);
         getMaps(user.uid);
-        console.log("UID SET ", user.uid);
       } else {
         setUid(null);
         navigate("/login"); // Redirect to login if not authenticated
-        console.log("UID NULL");
       }
     });
     return () => unsubscribe();
@@ -36,9 +34,7 @@ const CreatorEditPage = () => {
       const response = await axios.post("http://localhost:4000/maps", {
         uid,
       });
-      // console.log("UID", uid);
       const mapLinks = response.data.map((mapEntry) => mapEntry.map_link);
-      // console.log(mapLinks);
       const mapList = [];
       mapLinks.forEach((mapLink, index) => {
         const isMediaFire = mapLink.includes("mediafire.com");
@@ -52,12 +48,9 @@ const CreatorEditPage = () => {
       });
       setMaps(mapList);
       //Each object in the mapList array has 2 properties, the mapLink and a boolean if link contains mediafire
-      // console.log(maps);
       //allMaps is now an array with maplinks
       //Iterate through allMaps, if osu link call osu api, otherwise mediafire
-    } catch (error) {
-      console.error("Error fetching maps: ", error);
-    }
+    } catch (error) {}
   }
 
   //Iterates through the maps list and propogates mapDetails (filtering through osu maps and mediafire maps)
@@ -67,10 +60,8 @@ const CreatorEditPage = () => {
     const detailPromises = maps.map(async (map) => {
       let detail;
       if (map.isMediaFire) {
-        // console.log("media fire map hit");
         detail = getMediaFireDetails(map.mapLink);
       } else {
-        // console.log("osu map hit");
         detail = await getOsuDetails(map.mapLink);
       }
 
@@ -117,28 +108,22 @@ const CreatorEditPage = () => {
   //Helper function for getBeatmapDetails to extract the beatmap Set ID
   function extractBeatmapSetId(beatmapLink) {
     if (!beatmapLink || typeof beatmapLink !== "string") {
-      console.error("Invalid beatmap link:", beatmapLink);
       return null;
     }
     const match = beatmapLink.match(/beatmapsets\/(\d+)/);
     const beatmapSetId = match ? match[1] : null;
-    //console.log("Extracted Beatmap Set ID:", beatmapSetId);
     return beatmapSetId;
   }
 
   //function to handle osu map details
   async function getOsuDetails(beatmapLink) {
     const beatmapSetId = extractBeatmapSetId(beatmapLink);
-    // console.log("beatmapsetID", beatmapSetId);
 
     if (!beatmapSetId) {
-      console.error("Invalid beatmap link:", beatmapLink);
       return;
     }
 
     try {
-      //console.log("Making API request...");
-
       const response = await axios.get(
         "http://localhost:4000/getBeatmapDetails",
         {
@@ -147,7 +132,6 @@ const CreatorEditPage = () => {
       );
       return response.data;
     } catch (error) {
-      console.error("Error fetching beatmap details:", error);
       return null;
     }
   }
@@ -168,15 +152,12 @@ const CreatorEditPage = () => {
         window.location.href = "/";
       }
       try {
-        console.log("ADD MAP IDTOKEN", idToken);
         await axios.post(
           "http://localhost:4000/add",
           { mapLink },
           { headers: { Authorization: `Bearer ${idToken}` } }
         );
-      } catch (error) {
-        console.error("Error adding map", error);
-      }
+      } catch (error) {}
       getMaps(uid);
     } else {
       alert("Beatmap link invalid");
@@ -185,7 +166,6 @@ const CreatorEditPage = () => {
   }
 
   async function handleLogout() {
-    console.log("Signing user out:", auth.currentUser.uid);
     await signOut(auth);
     window.location.href = "/";
   }
@@ -200,15 +180,12 @@ const CreatorEditPage = () => {
     }
 
     try {
-      console.log("DELETE MAP IDTOKEN", idToken);
       await axios.delete("http://localhost:4000/delete", {
         headers: { Authorization: `Bearer ${idToken}` },
         data: { mapLink },
       });
       getMaps(uid);
-    } catch (error) {
-      console.error("Error deleting map: ", error);
-    }
+    } catch (error) {}
   }
 
   useEffect(() => {
@@ -217,9 +194,6 @@ const CreatorEditPage = () => {
   useEffect(() => {
     getMapDetails();
   }, [maps]);
-
-  // console.log("maps", maps);
-  // console.log("map details", mapDetails);
 
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-black via-neutral-600 to-black flex flex-col items-center">

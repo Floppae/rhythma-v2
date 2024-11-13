@@ -37,9 +37,7 @@ const CreatorPage = () => {
       });
       //allMaps is now an array with maplinks
       //Iterate through allMaps, if osu link call osu api, otherwise mediafire
-    } catch (error) {
-      console.error("Error fetching maps: ", error);
-    }
+    } catch (error) {}
   }
 
   //Iterates through the maps list and propogates mapDetails (filtering through osu maps and mediafire maps)
@@ -49,10 +47,8 @@ const CreatorPage = () => {
     const detailPromises = maps.map(async (map) => {
       let detail;
       if (map.isMediaFire) {
-        console.log("media fire map hit");
         detail = getMediaFireDetails(map.mapLink);
       } else {
-        console.log("osu map hit");
         detail = await getOsuDetails(map.mapLink);
       }
 
@@ -99,28 +95,22 @@ const CreatorPage = () => {
   //Helper function for getBeatmapDetails to extract the beatmap Set ID
   function extractBeatmapSetId(beatmapLink) {
     if (!beatmapLink || typeof beatmapLink !== "string") {
-      console.error("Invalid beatmap link:", beatmapLink);
       return null;
     }
     const match = beatmapLink.match(/beatmapsets\/(\d+)/);
     const beatmapSetId = match ? match[1] : null;
-    //console.log("Extracted Beatmap Set ID:", beatmapSetId);
     return beatmapSetId;
   }
 
   //function to handle osu map details
   async function getOsuDetails(beatmapLink) {
     const beatmapSetId = extractBeatmapSetId(beatmapLink);
-    console.log("beatmapsetID", beatmapSetId);
 
     if (!beatmapSetId) {
-      console.error("Invalid beatmap link:", beatmapLink);
       return;
     }
 
     try {
-      //console.log("Making API request...");
-
       const response = await axios.get(
         "http://localhost:4000/getBeatmapDetails",
         {
@@ -129,7 +119,6 @@ const CreatorPage = () => {
       );
       return response.data;
     } catch (error) {
-      console.error("Error fetching beatmap details:", error);
       return null;
     }
   }
@@ -140,9 +129,6 @@ const CreatorPage = () => {
   useEffect(() => {
     getMapDetails();
   }, [maps]);
-
-  console.log("maps", maps);
-  console.log("map details", mapDetails);
 
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-black via-neutral-600 to-black flex flex-col items-center">

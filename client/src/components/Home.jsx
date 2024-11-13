@@ -79,7 +79,6 @@ const Home = () => {
                 alt="creator image"
               ></img>
               <p>{creator.name}</p>
-              {console.log(creator.pfp)}
             </button>
           ))}
         </div>
