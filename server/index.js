@@ -1,16 +1,12 @@
 import express from "express";
-import bodyParser from "body-parser";
+// import bodyParser from "body-parser";
 import pg from "pg";
 import dotenv from "dotenv";
 import cors from "cors";
 import axios from "axios";
 import admin from "firebase-admin";
-import service from "./service.json" assert { type: "json" };
+// import service from "./service.json" assert { type: "json" };
 import { body, validationResult } from "express-validator";
-
-admin.initializeApp({
-  credential: admin.credential.cert(service),
-});
 
 dotenv.config({ path: ".env.local" });
 
@@ -18,6 +14,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 const port = process.env.SERVER_PORT;
+
+admin.initializeApp({
+  credential: admin.credential.cert({
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY,
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    client_id: process.env.FIREBASE_CLIENT_ID,
+  }),
+});
 
 const db = new pg.Pool({
   user: process.env.DB_USER,
@@ -45,7 +51,6 @@ app.post("/maps", async (req, res) => {
     ]);
     res.json(allMaps.rows);
   } catch (error) {
-    console.error("Error fetching maps:", error);
     res.status(500).send("Server error");
   }
 });
@@ -60,11 +65,9 @@ async function verifyIdToken(req, res, next) {
   try {
     //verify token with firebase (Verifies the token was signed/distributed by firebase)
     const decodedToken = await admin.auth().verifyIdToken(idToken);
-    console.log("IDTOKEN", idToken);
     req.uid = decodedToken.uid;
     next();
   } catch (error) {
-    console.error("Token Verification Failed", error);
     return res.status(403).json({ error: "Forbidden" });
   }
 }
@@ -76,7 +79,7 @@ app.post("/add", [body("mapLink").isURL()], verifyIdToken, async (req, res) => {
   //If the middleware that checks if the maplink is a url throws an error, it will be collected in errors array
   //If errors is not empty, there was an error
   const errors = validationResult(req);
-  if (errors) {
+  if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array });
   }
 
@@ -115,7 +118,6 @@ app.delete("/delete", verifyIdToken, async (req, res) => {
       ]);
       res.status(200).json({ message: "Entry deleted successfully" });
     } catch (error) {
-      console.error("Error deleting entry:", error);
       res.status(500).json({ message: "Server error" });
     }
   }
@@ -136,7 +138,6 @@ app.get("/admins", async (req, res) => {
     const admins = await db.query("SELECT uid FROM admins");
     res.json(admins.rows);
   } catch (error) {
-    console.error("Error fetching admins:", error);
     res.status(500).send("Server error");
   }
 });
@@ -184,21 +185,8 @@ app.get("/getBeatmapDetails", async (req, res) => {
       return res.status(404).json({ error: "Beatmap Retrieval Unsuccessful" });
     }
   } catch (error) {
-    console.error("Error fetching beatmap details:", {
-      message: error.message,
-      stack: error.stack,
-      config: error.config,
-      response: error.response
-        ? {
-            status: error.response.status,
-            data: error.response.data,
-          }
-        : "No response from osu! API",
-    });
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+app.listen(port);
