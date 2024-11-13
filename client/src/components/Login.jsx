@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 function Login() {
   const navigate = useNavigate();
@@ -30,10 +29,6 @@ function Login() {
     const passwordInput = event.target.value;
     setPassword(passwordInput);
     //console.log(password);
-  }
-
-  function handleHome() {
-    window.location.href = "/";
   }
 
   return (

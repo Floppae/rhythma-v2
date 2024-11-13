@@ -6,6 +6,7 @@ import cors from "cors";
 import axios from "axios";
 import admin from "firebase-admin";
 import service from "./service.json" assert { type: "json" };
+import { body, validationResult } from "express-validator";
 
 admin.initializeApp({
   credential: admin.credential.cert(service),
@@ -16,9 +17,9 @@ dotenv.config({ path: ".env.local" });
 const app = express();
 app.use(cors());
 app.use(express.json());
-const port = 4000;
+const port = process.env.SERVER_PORT;
 
-const db = new pg.Client({
+const db = new pg.Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_DATABASE,
@@ -36,6 +37,7 @@ app.post("/maps", async (req, res) => {
   //   user_id: varchar,
   //   map_link: varchar
   // }
+
   const { uid } = req.body;
   try {
     const allMaps = await db.query("SELECT * FROM maps WHERE user_id = $1", [
@@ -68,7 +70,16 @@ async function verifyIdToken(req, res, next) {
 }
 
 //add map
-app.post("/add", verifyIdToken, async (req, res) => {
+//Request goes through input sanitization and token verification before querying database
+app.post("/add", [body("mapLink").isURL()], verifyIdToken, async (req, res) => {
+  //Input sanitization
+  //If the middleware that checks if the maplink is a url throws an error, it will be collected in errors array
+  //If errors is not empty, there was an error
+  const errors = validationResult(req);
+  if (errors) {
+    return res.status(400).json({ errors: errors.array });
+  }
+
   const { mapLink } = req.body;
 
   //req.uid is from middleware

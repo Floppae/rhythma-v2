@@ -3,13 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import axios from "axios";
 import Card from "./Card";
-import {
-  browserLocalPersistence,
-  getIdTokenResult,
-  onAuthStateChanged,
-  setPersistence,
-  signOut,
-} from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import Rhythma from "../../src/assets/Rhythma.png";
 
 const CreatorEditPage = () => {

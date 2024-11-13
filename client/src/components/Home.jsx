@@ -4,12 +4,10 @@ import grizzly from "../assets/grizzlypng.jpeg";
 import davolaf from "../assets/davolaf.jpeg";
 import bleachy from "../assets/bleachy.jpeg";
 import strawb from "../assets/strawb.jpeg";
-import Rhythma from "../../src/assets/Rhythma.png";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const creators = [
     {
       name: "User Seif",
