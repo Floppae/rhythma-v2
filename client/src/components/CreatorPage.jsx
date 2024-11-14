@@ -19,9 +19,12 @@ const CreatorPage = () => {
 
   async function getMaps() {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_URL}/maps`, {
-        uid: creator.uid,
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/maps`,
+        {
+          uid: creator.uid,
+        }
+      );
       const mapLinks = response.data.map((mapEntry) => mapEntry.map_link);
       const mapList = [];
       mapLinks.forEach((mapLink, index) => {
@@ -112,7 +115,7 @@ const CreatorPage = () => {
 
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_URL}/getBeatmapDetails`,
+        `${process.env.REACT_APP_API_URL}/getBeatmapDetails`,
         {
           params: { beatmapSetId, uid, beatmapLink },
         }

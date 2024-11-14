@@ -31,9 +31,12 @@ const CreatorEditPage = () => {
 
   async function getMaps(uid) {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_URL}/maps`, {
-        uid,
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/maps`,
+        {
+          uid,
+        }
+      );
       const mapLinks = response.data.map((mapEntry) => mapEntry.map_link);
       const mapList = [];
       mapLinks.forEach((mapLink, index) => {
@@ -125,7 +128,7 @@ const CreatorEditPage = () => {
 
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_URL}/getBeatmapDetails`,
+        `${process.env.REACT_APP_API_URL}/getBeatmapDetails`,
         {
           params: { beatmapSetId, uid, beatmapLink },
         }
@@ -153,7 +156,7 @@ const CreatorEditPage = () => {
       }
       try {
         await axios.post(
-          `${process.env.REACT_APP_URL}/add`,
+          `${process.env.REACT_APP_API_URL}/add`,
           { mapLink },
           { headers: { Authorization: `Bearer ${idToken}` } }
         );
@@ -180,7 +183,7 @@ const CreatorEditPage = () => {
     }
 
     try {
-      await axios.delete(`${process.env.REACT_APP_URL}/delete`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/delete`, {
         headers: { Authorization: `Bearer ${idToken}` },
         data: { mapLink },
       });
