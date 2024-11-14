@@ -12,7 +12,7 @@ dotenv.config({ path: ".env.local" });
 
 const app = express();
 
-app.use(cors({ origin: [process.env.URL], credentials: true }));
+app.use(cors({ origin: process.env.URL, credentials: true }));
 app.use(express.json());
 const port = process.env.SERVER_PORT;
 
@@ -32,10 +32,15 @@ const db = new pg.Pool({
   database: process.env.DB_DATABASE,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 3000,
+  ssl: {
+    rejectUnauthorized: false, // Use true if using a trusted certificate
+  },
 });
 
 db.connect();
-
 app.post("/maps", async (req, res) => {
   //grabs maps and takes uid as argument
   //returns
