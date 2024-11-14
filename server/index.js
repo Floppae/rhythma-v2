@@ -12,7 +12,12 @@ dotenv.config({ path: ".env.local" });
 
 const app = express();
 
-app.use(cors({ origin: process.env.URL, credentials: true }));
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://www.rhythma.net/"],
+    credentials: true, // If you need to send cookies or credentials
+  })
+);
 app.use(express.json());
 const port = process.env.SERVER_PORT;
 
@@ -84,12 +89,14 @@ app.post("/add", [body("mapLink").isURL()], verifyIdToken, async (req, res) => {
   //Input sanitization
   //If the middleware that checks if the maplink is a url throws an error, it will be collected in errors array
   //If errors is not empty, there was an error
+  console.log("addmap hit");
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array });
   }
 
   const { mapLink } = req.body;
+  console.log(mapLink);
 
   //req.uid is from middleware
   const uid = req.uid;
@@ -195,4 +202,6 @@ app.get("/getBeatmapDetails", async (req, res) => {
   }
 });
 
-app.listen(port);
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+});
