@@ -19,12 +19,14 @@ const CreatorPage = () => {
 
   async function getMaps() {
     try {
+      console.log("Allocating Maps");
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/maps`,
         {
           uid: creator.uid,
         }
       );
+      console.log("Maps Allocated");
       const mapLinks = response.data.map((mapEntry) => mapEntry.map_link);
       const mapList = [];
       mapLinks.forEach((mapLink, index) => {
@@ -46,6 +48,7 @@ const CreatorPage = () => {
   //Iterates through the maps list and propogates mapDetails (filtering through osu maps and mediafire maps)
   async function getMapDetails() {
     const details = {};
+    console.log("Allocating Details");
 
     const detailPromises = maps.map(async (map) => {
       let detail;

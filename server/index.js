@@ -14,7 +14,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://www.rhythma.net/"],
+    origin: ["http://localhost:3000", "https://www.rhythma.net"],
     credentials: true, // If you need to send cookies or credentials
   })
 );

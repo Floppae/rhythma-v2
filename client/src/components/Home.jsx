@@ -7,6 +7,7 @@ import strawb from "../assets/strawb.jpeg";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+  console.log(process.env.REACT_APP_TEST);
   const navigate = useNavigate();
   const creators = [
     {
