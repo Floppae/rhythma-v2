@@ -11,7 +11,7 @@ import { body, validationResult } from "express-validator";
 dotenv.config({ path: ".env.local" });
 
 const app = express();
-app.use(cors());
+app.use(cors(`${process.env.URL}`));
 app.use(express.json());
 const port = process.env.SERVER_PORT;
 

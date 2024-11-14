@@ -19,7 +19,7 @@ const CreatorPage = () => {
 
   async function getMaps() {
     try {
-      const response = await axios.post("http://localhost:4000/maps", {
+      const response = await axios.post(`${process.env.REACT_APP_URL}/maps`, {
         uid: creator.uid,
       });
       const mapLinks = response.data.map((mapEntry) => mapEntry.map_link);
@@ -112,7 +112,7 @@ const CreatorPage = () => {
 
     try {
       const response = await axios.get(
-        "http://localhost:4000/getBeatmapDetails",
+        `${process.env.REACT_APP_URL}/getBeatmapDetails`,
         {
           params: { beatmapSetId, uid, beatmapLink },
         }

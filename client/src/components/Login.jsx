@@ -22,13 +22,11 @@ function Login() {
   function handleEmail(event) {
     const emailInput = event.target.value;
     setEmail(emailInput);
-    //console.log(email);
   }
 
   function handlePassword(event) {
     const passwordInput = event.target.value;
     setPassword(passwordInput);
-    //console.log(password);
   }
 
   return (
