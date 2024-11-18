@@ -1,6 +1,6 @@
 import React from "react";
 
-function Card(props) {
+const Card = React.memo((props) => {
   return (
     <div
       key={props.index}
@@ -45,6 +45,5 @@ function Card(props) {
       )}
     </div>
   );
-}
-
+});
 export default Card;

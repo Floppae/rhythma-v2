@@ -175,7 +175,6 @@ const CreatorEditPage = () => {
         alert("User not authenticated");
         window.location.href = "/";
       }
-
       await axios.post(
         `${process.env.REACT_APP_API_URL}/add`,
         { mapLink },

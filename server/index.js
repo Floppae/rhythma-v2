@@ -46,6 +46,26 @@ const db = new pg.Pool({
 });
 
 db.connect();
+
+//caching data for uid's to optimize authorization process
+let adminSet = new Set(); // Cache for admin UIDs
+
+// Preload Admins at Startup
+async function preloadAdmins() {
+  try {
+    const result = await db.query("SELECT uid FROM admins");
+    adminSet = new Set(result.rows.map((row) => row.uid));
+    // console.log("Admin UIDs preloaded:", adminSet);
+  } catch (error) {
+    console.error("Error preloading admin UIDs:", error);
+  }
+}
+
+// Utility to Check Admin Status
+function isAdmin(uid) {
+  return adminSet.has(uid); // Constant-time lookup
+}
+
 app.post("/maps", async (req, res) => {
   //grabs maps and takes uid as argument
   //returns
@@ -86,6 +106,7 @@ async function verifyIdToken(req, res, next) {
 //add map
 //Request goes through input sanitization and token verification before querying database
 app.post("/add", [body("mapLink").isURL()], verifyIdToken, async (req, res) => {
+  const start = Date.now();
   //Input sanitization
   //If the middleware that checks if the maplink is a url throws an error, it will be collected in errors array
   //If errors is not empty, there was an error
@@ -100,24 +121,31 @@ app.post("/add", [body("mapLink").isURL()], verifyIdToken, async (req, res) => {
 
   //req.uid is from middleware
   const uid = req.uid;
+  console.log(`[AUTH] Verifying admin: ${Date.now() - start}ms`);
 
   //Authentication
-  const auth = await db.query(
-    "SELECT EXISTS (SELECT 1 FROM admins WHERE uid = $1)",
-    [uid]
-  );
-  if (auth.rows[0].exists) {
-    try {
-      await db.query("INSERT INTO maps (user_id, map_link) VALUES ($1,$2)", [
-        uid,
-        mapLink,
-      ]);
-    } catch (error) {
-      if ((error.code = "23505")) {
-        return res.status(400).json({ error: "Map already exists" });
-      }
+  const authStart = Date.now();
+  if (!isAdmin(uid)) {
+    return res.status(403).json({ error: "User not authorized" });
+  }
+  console.log(`[AUTH] Query executed in ${Date.now() - authStart}ms`);
+
+  const insertStart = Date.now();
+  try {
+    await db.query("INSERT INTO maps (user_id, map_link) VALUES ($1,$2)", [
+      uid,
+      mapLink,
+    ]);
+    console.log(`[INSERT] Query executed in ${Date.now() - insertStart}ms`);
+
+    return res.status(200).json("Success");
+  } catch (error) {
+    if ((error.code = "23505")) {
+      return res.status(400).json({ error: "Map already exists" });
     }
   }
+
+  console.log(`[END] /add completed in ${Date.now() - start}ms`);
 });
 
 app.delete("/delete", verifyIdToken, async (req, res) => {
@@ -125,20 +153,18 @@ app.delete("/delete", verifyIdToken, async (req, res) => {
   const uid = req.uid;
 
   //Authentication
-  const auth = await db.query(
-    "SELECT EXISTS (SELECT 1 FROM admins WHERE uid = $1)",
-    [uid]
-  );
-  if (auth.rows[0].exists) {
-    try {
-      await db.query("DELETE FROM maps WHERE user_id = $1 AND map_link = $2", [
-        uid,
-        mapLink,
-      ]);
-      res.status(200).json({ message: "Entry deleted successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Server error" });
-    }
+  if (!isAdmin(uid)) {
+    return res.status(403).json({ error: "User not authorized" });
+  }
+
+  try {
+    await db.query("DELETE FROM maps WHERE user_id = $1 AND map_link = $2", [
+      uid,
+      mapLink,
+    ]);
+    res.status(200).json({ message: "Entry deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -208,6 +234,7 @@ app.get("/getBeatmapDetails", async (req, res) => {
   }
 });
 
+preloadAdmins();
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
