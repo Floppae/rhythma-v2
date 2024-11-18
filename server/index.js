@@ -37,7 +37,7 @@ const db = new pg.Pool({
   database: process.env.DB_DATABASE,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
-  max: 10,
+  max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 3000,
   ssl: {
@@ -107,10 +107,16 @@ app.post("/add", [body("mapLink").isURL()], verifyIdToken, async (req, res) => {
     [uid]
   );
   if (auth.rows[0].exists) {
-    await db.query("INSERT INTO maps (user_id, map_link) VALUES ($1,$2)", [
-      uid,
-      mapLink,
-    ]);
+    try {
+      await db.query("INSERT INTO maps (user_id, map_link) VALUES ($1,$2)", [
+        uid,
+        mapLink,
+      ]);
+    } catch (error) {
+      if ((error.code = "23505")) {
+        return res.status(400).json({ error: "Map already exists" });
+      }
+    }
   }
 });
 

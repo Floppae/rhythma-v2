@@ -17,12 +17,12 @@ const CreatorPage = () => {
   //maps will store map links
   //mapDetails will store the details of a map based on the corresponding index of maps
 
-  async function getMaps() {
+  async function getMaps(uid) {
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/maps`,
         {
-          uid: creator.uid,
+          uid,
         }
       );
       const mapLinks = response.data.map((mapEntry) => mapEntry.map_link);
@@ -127,7 +127,7 @@ const CreatorPage = () => {
   }
 
   useEffect(() => {
-    getMaps();
+    getMaps(uid);
   }, []);
   useEffect(() => {
     getMapDetails();

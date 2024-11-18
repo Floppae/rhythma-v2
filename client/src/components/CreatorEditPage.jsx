@@ -10,6 +10,8 @@ const CreatorEditPage = () => {
   const [uid, setUid] = useState(null);
   const [maps, setMaps] = useState([]);
   const [mapDetails, setMapDetails] = useState({});
+  const [loadingMaps, setLoadingMaps] = useState(true);
+  const [loadingDetails, setLoadingDetails] = useState(true);
   const navigate = useNavigate();
   //Initialize variables
   //uid is the id of The creator from firebase that we will use to index our pg database
@@ -149,22 +151,38 @@ const CreatorEditPage = () => {
       mapLink.match(/beatmapsets\/(\d+)/) ||
       mapLink.match(/\/file\/[^\/]+\/([^-]+)-(.+)\.osz\/file/)
     ) {
+      //Update state of maps instead of calling getMaps() and refetching all the maps just to add one
+      //When we update maps, mapDetails will update because maps is a dependency
+      setMaps((prevMaps) => [
+        ...prevMaps,
+        {
+          id: prevMaps.length,
+          isMediaFire: mapLink.includes("mediafire.com"),
+          mapLink,
+        },
+      ]);
+      syncMapWithServer(mapLink);
+    } else {
+      alert("Beatmap link invalid");
+      return;
+    }
+  }
+
+  async function syncMapWithServer(mapLink) {
+    try {
       const idToken = await auth.currentUser.getIdToken();
       if (!idToken) {
         alert("User not authenticated");
         window.location.href = "/";
       }
-      try {
-        await axios.post(
-          `${process.env.REACT_APP_API_URL}/add`,
-          { mapLink },
-          { headers: { Authorization: `Bearer ${idToken}` } }
-        );
-      } catch (error) {}
-      getMaps(uid);
-    } else {
-      alert("Beatmap link invalid");
-      return;
+
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/add`,
+        { mapLink },
+        { headers: { Authorization: `Bearer ${idToken}` } }
+      );
+    } catch (error) {
+      console.error("Error syncing map with database");
     }
   }
 
@@ -192,11 +210,35 @@ const CreatorEditPage = () => {
   }
 
   useEffect(() => {
-    getMaps();
-  }, []);
+    try {
+      getMaps(uid);
+    } catch (error) {
+      console.error("Error loading maps");
+    } finally {
+      //set the laoding state to true
+      setLoadingMaps(false);
+    }
+  }, [uid]);
   useEffect(() => {
-    getMapDetails();
+    try {
+      getMapDetails();
+    } catch (error) {
+      console.error("Error loading map details");
+    } finally {
+      //set the laoding state to true
+      setLoadingDetails(false);
+    }
   }, [maps]);
+
+  if (loadingMaps || loadingDetails) {
+    //return the a loading screen if the loading state is set to true
+    //Once loading is complete, the useEffects will toggle the loading state to false and we can render everything
+    return (
+      <div className="w-screen h-screen bg-gradient-to-r from-black via-neutral-600 to-black flex flex-col items-center">
+        <h1>Loading...</h1>
+      </div>
+    );
+  }
 
   return (
     <div className="w-screen h-screen bg-gradient-to-r from-black via-neutral-600 to-black flex flex-col items-center">
