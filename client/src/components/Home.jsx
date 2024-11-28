@@ -18,13 +18,13 @@ const Home = () => {
     {
       name: "Grizzlypng",
       pfp: grizzly,
-      uid: process.env.GRIZZLYUID,
+      uid: process.env.REACT_APP_GRIZZLYUID,
       link: "https://linktr.ee/grizzlypng",
     },
     {
       name: "Davolaf",
       pfp: davolaf,
-      uid: process.env.DAVOLAFUID,
+      uid: process.env.REACT_APP_DAVOLAFUID,
       link: "https://linktr.ee/davolaf",
     },
     {
@@ -36,7 +36,7 @@ const Home = () => {
     {
       name: "Strawbewwiii",
       pfp: strawb,
-      uid: process.env.STRAWUID,
+      uid: process.env.REACT_APP_STRAWUID,
       link: "https://linktr.ee/strawbewwiii",
     },
   ];
