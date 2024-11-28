@@ -182,6 +182,7 @@ const CreatorEditPage = () => {
       );
     } catch (error) {
       console.error("Error syncing map with database");
+      alert("Map not added, send notice to developers");
     }
   }
 
@@ -243,10 +244,6 @@ const CreatorEditPage = () => {
     <div className="w-screen h-screen bg-gradient-to-r from-black via-neutral-600 to-black flex flex-col items-center">
       <div className="h-2/12 w-10/12 py-5 text-white text-2xl flex justify-between">
         <div className="flex">
-          <img
-            src={Rhythma}
-            className="border-2 border-white h-32 w-32 rounded-full"
-          />
           <div className="content-center">
             <header className="mb-3 text-5xl"></header>
             {/* <input
