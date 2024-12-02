@@ -54,7 +54,7 @@ const Home = () => {
       );
       const entries = response.data.map((entry) => ({
         mapLink: entry.map_link,
-        uid: entry.uid,
+        uid: entry.user_id,
       }));
       const mapList = [];
       entries.forEach(({ mapLink, uid }, index) => {
@@ -79,7 +79,7 @@ const Home = () => {
   //Iterates through the maps list and propogates mapDetails (filtering through osu maps and mediafire maps)
   async function getMapDetails() {
     const details = {};
-
+    console.log(maps);
     const detailPromises = maps.map(async (map) => {
       let detail;
       if (map.isMediaFire) {
@@ -114,7 +114,8 @@ const Home = () => {
       /\/file\/[^\/]+\/([^-]+)-(.+)\.osz\/file/
     );
     if (match) {
-      const creator = creators.find((creator) => creator.uid == uid);
+      const creator = creators.find((creator) => creator.uid === uid);
+      console.log("UID's: ", uid);
       const artist = match[1].replace(/_/g, " ");
       const title = match[2].replace(/_/g, " ");
       return {
@@ -176,20 +177,23 @@ const Home = () => {
   }
 
   return (
-    <div className="text-white w-screen min-h-screen bg-gradient-to-r from-black via-neutral-600 to-black flex flex-col items-center justify-center">
-      <div className="flex flex-col w-1/3 h-1/4 items-center w-full justify-center p-5 mt-10 rounded-lg shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] border-2 border-solid border-neutral-500">
+    <div className="text-white min-w-screen min-h-screen bg-gradient-to-r from-black via-neutral-600 to-black flex flex-col items-center justify-center">
+      <div className="flex flex-col w-1/2 h-1/4 items-center w-full justify-center p-5 mt-10 rounded-lg shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] border-2 border-solid border-neutral-500">
         <h1 className="text-5xl text-neutral-400">Rhythma</h1>
         <p className="text-xl text-center mt-3 text-neutral-400">
           Connecting Creators And Community Through Music
         </p>
       </div>
-      <div className="flex flex-col flex-grow w-3/4 text-neutral-400 text-2xl shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black from-neutral-900 via-neutral-500 to-neutral-900 rounded-lg m-10 justify-center border-2 border-solid border-neutral-500">
+      <div className="flex flex-col flex-grow w-8/12 text-neutral-400 text-2xl shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black from-neutral-900 via-neutral-500 to-neutral-900 rounded-lg m-10 justify-center border-2 border-solid border-neutral-500">
         {/* <div className="flex w-1/4 h-72 items-center justify-center">
             <img className="w-48 rounded-full" src={Rhythma} />
           </div> */}
         {/* <div className="flex flex-col justify-center items-center">
           <h1>Meet our Creators</h1>
         </div> */}
+        <h1 className="text-3xl text-neutral-400 flex justify-center pt-5">
+          Meet Our Founders
+        </h1>
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 justify-items-center items-start p-10">
           {creators.map((creator, index) => (
             <button
@@ -209,7 +213,7 @@ const Home = () => {
           ))}
         </div>
       </div>
-      <div className="w-10/12 py-5 text-white text-2xl overflow-auto grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="border-2 border-solid border-neutral-500 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black bg-gradient-to-r from-neutral-900 via-neutral-700 to-neutral-900 rounded-lg w-8/12 py-5 text-white text-2xl overflow-auto grid grid-cols-1 md:grid-cols-2 gap-5">
         {maps.map(({ id, mapLink }, index) => (
           <Card
             details={mapDetails[id]}
