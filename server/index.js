@@ -94,6 +94,25 @@ async function osuApiRequest(url, params) {
   }
 }
 
+//GET CACHE DATA
+async function getCacheData(key) {
+  const result = await db.query(
+    "SELECT value FROM api_cache WHERE key = $1 AND expires_at > NOW()",
+    [key]
+  );
+  return result.rows[0]?.value || null;
+}
+
+//SET CACHE DATA
+async function setCacheData(key, value, ttlSeconds) {
+  const expiresAt = new Date(Date.now() + ttlSeconds * 1000).toISOString();
+
+  await db.query(
+    "INSERT INTO api_cache (key,value,expires_at) VALUES ($1,$2,$3) ON CONFLICT (key) DO UPDATE SET value = $2, expires_at = $3",
+    [key, JSON.stringify(value), expiresAt]
+  );
+}
+
 //OSU API RATE LIMITER Middleware
 const osuApiLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -106,7 +125,6 @@ async function preloadAdmins() {
   try {
     const result = await db.query("SELECT uid FROM admins");
     adminSet = new Set(result.rows.map((row) => row.uid));
-    // console.log("Admin UIDs preloaded:", adminSet);
   } catch (error) {
     console.error("Error preloading admin UIDs:", error);
   }
@@ -170,14 +188,12 @@ app.post("/add", [body("mapLink").isURL()], verifyIdToken, async (req, res) => {
   //Input sanitization
   //If the middleware that checks if the maplink is a url throws an error, it will be collected in errors array
   //If errors is not empty, there was an error
-  console.log("addmap hit");
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array });
   }
 
   const { mapLink } = req.body;
-  console.log(mapLink);
 
   //req.uid is from middleware
   const uid = req.uid;
@@ -271,20 +287,29 @@ app.get("/getBeatmapDetails", osuApiLimiter, async (req, res) => {
   };
 
   try {
+    //Check cache for beatmap details
+    const cacheKey = `set${beatmapSetId.toString()}`;
+    const cachedData = await getCacheData(cacheKey);
+    if (cachedData) {
+      return res.status(200).json(cachedData);
+    }
+
     //Running axios HTTP GET request with base url and parameters to get beatmap details
     const response = await osuApiRequest(url, params);
 
     //Checking if we successfully got the beatmap details
     if (response.length > 0) {
       const beatmap = response[0];
-      return res.status(200).json({
+      const result = {
         title: beatmap.title,
         creator: beatmap.creator,
         artist: beatmap.artist,
         coverUrl: `https://assets.ppy.sh/beatmaps/${beatmap.beatmapset_id}/covers/cover.jpg`,
         uid: uid,
         beatmapLink: beatmapLink,
-      });
+      };
+      await setCacheData(cacheKey, result, 3600); //1 hour ttl
+      return res.status(200).json(result);
     } else {
       return res.status(404).json({ error: "Beatmap Retrieval Unsuccessful" });
     }
