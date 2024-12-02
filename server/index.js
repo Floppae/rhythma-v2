@@ -58,6 +58,7 @@ const resetInterval = 60 * 1000;
 
 //resets globalRequestCount after 1 minute
 setInterval(() => {
+  console.log("[RESETTING REQUEST COUNT]");
   globalRequestCount = 0;
 }, resetInterval);
 
@@ -70,6 +71,7 @@ async function osuApiRequest(url, params) {
   }
 
   globalRequestCount++;
+  console.log(`[REQUESTS SENT]: ${globalRequestCount}`);
   try {
     const response = await axios.get(url, { params });
     return response.data;
