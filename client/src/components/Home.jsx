@@ -1,13 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import userSeif from "../assets/user-seif.jpeg";
 import grizzly from "../assets/grizzlypng.jpeg";
 import davolaf from "../assets/davolaf.jpeg";
 import bleachy from "../assets/bleachy.jpeg";
 import strawb from "../assets/strawb.jpeg";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import Card from "./Card";
 
 const Home = () => {
   const navigate = useNavigate();
+
+  const [maps, setMaps] = useState([]);
+  const [mapDetails, setMapDetails] = useState({});
+
   const creators = [
     {
       name: "User Seif",
@@ -40,6 +46,126 @@ const Home = () => {
       link: "https://linktr.ee/strawbewwiii",
     },
   ];
+
+  async function getMaps() {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/getAllMaps`
+      );
+      const entries = response.data.map((entry) => ({
+        mapLink: entry.map_link,
+        uid: entry.uid,
+      }));
+      const mapList = [];
+      entries.forEach(({ mapLink, uid }, index) => {
+        const isMediaFire = mapLink.includes("mediafire.com");
+        const id = index;
+        mapList.push({
+          id,
+          uid,
+          isMediaFire,
+          mapLink,
+        });
+        //Each object in the mapList array has 2 properties, the mapLink and a boolean if link contains mediafire
+        setMaps(mapList);
+      });
+      //allMaps is now an array with maplinks
+      //Iterate through allMaps, if osu link call osu api, otherwise mediafire
+    } catch (error) {
+      console.error("error fetching maps");
+    }
+  }
+
+  //Iterates through the maps list and propogates mapDetails (filtering through osu maps and mediafire maps)
+  async function getMapDetails() {
+    const details = {};
+
+    const detailPromises = maps.map(async (map) => {
+      let detail;
+      if (map.isMediaFire) {
+        detail = getMediaFireDetails(map.mapLink, map.uid);
+      } else {
+        detail = await getOsuDetails(map.mapLink, map.uid);
+      }
+
+      if (detail) {
+        details[map.id] = detail; // Add the detail to the object
+      }
+    });
+
+    await Promise.all(detailPromises);
+    //THIS LINE IS EXTREMELY IMPORTANT
+    //Code was only showing mediafiremaps because my await function call to get osu map details wasnt firing quick enough
+    //This is because forEach deos not wait for async operations to complete, so setMapDetails was firing before waiting for data from osu api route
+    //By using Promise.all() we can now wait for all async function to complete before proceeding with our setMapDetails hook
+    //Promise.all takes an array of promises and resolves when all promises have resolved, if any fail, this will reject
+    //When testing, I had an array of 2 promises and a media fire map. Promise.all resolved this issue
+
+    // Combine new details with the existing state
+    setMapDetails((prevDetails) => ({
+      ...prevDetails,
+      ...details,
+    }));
+  }
+
+  //function to handle mediafire map details
+  function getMediaFireDetails(mediaFireLink, uid) {
+    const match = mediaFireLink.match(
+      /\/file\/[^\/]+\/([^-]+)-(.+)\.osz\/file/
+    );
+    if (match) {
+      const creator = creators.find((creator) => creator.uid == uid);
+      const artist = match[1].replace(/_/g, " ");
+      const title = match[2].replace(/_/g, " ");
+      return {
+        artist,
+        title,
+        coverUrl: creator.pfp,
+        creator: creator.name,
+        beatmapLink: mediaFireLink,
+        uid,
+      };
+    }
+    return null;
+  }
+
+  //Helper function for getBeatmapDetails to extract the beatmap Set ID
+  function extractBeatmapSetId(beatmapLink) {
+    if (!beatmapLink || typeof beatmapLink !== "string") {
+      return null;
+    }
+    const match = beatmapLink.match(/beatmapsets\/(\d+)/);
+    const beatmapSetId = match ? match[1] : null;
+    return beatmapSetId;
+  }
+
+  //function to handle osu map details
+  async function getOsuDetails(beatmapLink, uid) {
+    const beatmapSetId = extractBeatmapSetId(beatmapLink);
+
+    if (!beatmapSetId) {
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/getBeatmapDetails`,
+        {
+          params: { beatmapSetId, uid, beatmapLink },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    getMaps();
+  }, []);
+  useEffect(() => {
+    getMapDetails();
+  }, [maps]);
 
   function handleClick(creator) {
     navigate("/creator", { state: { creator } });
@@ -82,6 +208,17 @@ const Home = () => {
             </button>
           ))}
         </div>
+      </div>
+      <div className="w-10/12 py-5 text-white text-2xl overflow-auto grid grid-cols-1 md:grid-cols-2 gap-5">
+        {maps.map(({ id, mapLink }, index) => (
+          <Card
+            details={mapDetails[id]}
+            key={index}
+            index={index}
+            name={id}
+            mapLink={mapLink}
+          />
+        ))}
       </div>
       <div className="flex w-full justify-start pl-10 pb-10">
         <p className="mr-1">Founders</p>
