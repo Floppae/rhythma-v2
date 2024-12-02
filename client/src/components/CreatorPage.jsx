@@ -40,7 +40,9 @@ const CreatorPage = () => {
       });
       //allMaps is now an array with maplinks
       //Iterate through allMaps, if osu link call osu api, otherwise mediafire
-    } catch (error) {}
+    } catch (error) {
+      console.error("error fetching maps");
+    }
   }
 
   //Iterates through the maps list and propogates mapDetails (filtering through osu maps and mediafire maps)
