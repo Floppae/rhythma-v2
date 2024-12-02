@@ -49,7 +49,7 @@ const Home = () => {
 
   async function getMaps() {
     try {
-      const response = await axios.post(
+      const response = await axios.get(
         `${process.env.REACT_APP_API_URL}/getAllMaps`
       );
       const entries = response.data.map((entry) => ({
