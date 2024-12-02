@@ -1,4 +1,5 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 // import bodyParser from "body-parser";
 import pg from "pg";
 import dotenv from "dotenv";
@@ -50,6 +51,40 @@ db.connect();
 //caching data for uid's to optimize authorization process
 let adminSet = new Set(); // Cache for admin UIDs
 
+//Global Rate Limiting
+let globalRequestCount = 0;
+const globalRequestMax = 100;
+const resetInterval = 60 * 1000;
+
+//resets globalRequestCount after 1 minute
+setInterval(() => {
+  globalRequestCount = 0;
+}, resetInterval);
+
+//Function to check API rate limits before calling osu API
+async function osuApiRequest(url, params) {
+  if (globalRequestCount >= globalRequestMax) {
+    throw new Error(
+      "Global rate limit exceeded for osu! API. Try again in 1 minute."
+    );
+  }
+
+  globalRequestCount++;
+  try {
+    const response = await axios.get(url, { params });
+    return response.data;
+  } catch (error) {
+    console.error("Error calling osu API");
+  }
+}
+
+//OSU API RATE LIMITER Middleware
+const osuApiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  message: "Too many requests to the osu! APi. Please try again in 1 minute.",
+});
+
 // Preload Admins at Startup
 async function preloadAdmins() {
   try {
@@ -66,7 +101,7 @@ function isAdmin(uid) {
   return adminSet.has(uid); // Constant-time lookup
 }
 
-app.post("/maps", async (req, res) => {
+app.post("/maps", osuApiLimiter, async (req, res) => {
   //grabs maps and takes uid as argument
   //returns
   // {
@@ -83,6 +118,15 @@ app.post("/maps", async (req, res) => {
     res.json(allMaps.rows);
   } catch (error) {
     res.status(500).send("Server error");
+  }
+});
+
+app.get("/getAllMaps", osuApiLimiter, async (req, res) => {
+  try {
+    const allEntries = await db.query("SELECT * FROM maps");
+    res.status(200).json(allEntries.rows);
+  } catch {
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -187,7 +231,7 @@ app.get("/admins", async (req, res) => {
   }
 });
 
-app.get("/getBeatmapDetails", async (req, res) => {
+app.get("/getBeatmapDetails", osuApiLimiter, async (req, res) => {
   //searchParams is a propety of URL object
   //searchParams allows us to use .get to grab parameters we set when we called this endpoint
   // const response = await axios.get("/getBeatmapDetails", {
@@ -213,7 +257,7 @@ app.get("/getBeatmapDetails", async (req, res) => {
 
   try {
     //Running axios HTTP GET request with base url and parameters to get beatmap details
-    const response = await axios.get(url, { params });
+    const response = await osuApiRequest(url, params);
     const beatmap = response.data[0];
 
     //Checking if we successfully got the beatmap details
