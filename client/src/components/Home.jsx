@@ -178,7 +178,7 @@ const Home = () => {
 
   return (
     <div className="text-white min-w-screen min-h-screen bg-gradient-to-r from-black via-neutral-600 to-black flex flex-col items-center justify-center">
-      <div className="flex flex-col w-1/2 h-1/4 items-center w-full justify-center p-5 mt-10 rounded-lg shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] border-2 border-solid border-neutral-500">
+      <div className="flex flex-col w-1/2 h-1/4 items-center justify-center p-5 mt-10 rounded-lg shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] border-2 border-solid border-neutral-500">
         <h1 className="text-5xl text-neutral-400">Rhythma</h1>
         <p className="text-xl text-center mt-3 text-neutral-400">
           Connecting Creators And Community Through Music
@@ -213,7 +213,7 @@ const Home = () => {
           ))}
         </div>
       </div>
-      <div className="border-2 border-solid border-neutral-500 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black bg-gradient-to-r from-neutral-900 via-neutral-700 to-neutral-900 rounded-lg w-8/12 py-5 text-white text-2xl overflow-auto grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="border-2 border-solid border-neutral-500 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black bg-gradient-to-r from-neutral-900 via-neutral-700 to-neutral-900 rounded-lg w-8/12 p-12 text-white text-2xl overflow-auto grid grid-cols-1 md:grid-cols-2 gap-5">
         {maps.map(({ id, mapLink }, index) => (
           <Card
             details={mapDetails[id]}

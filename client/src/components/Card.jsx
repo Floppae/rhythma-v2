@@ -1,6 +1,10 @@
 import React from "react";
+import Rhythma from "../assets/Rhythma.png";
 
 const Card = React.memo((props) => {
+  const decodedTitle =
+    props.details?.title &&
+    decodeURIComponent(decodeURIComponent(props.details.title));
   return (
     <div
       key={props.index}
@@ -11,9 +15,10 @@ const Card = React.memo((props) => {
           <div className="flex-none w-32 h-32 rounded-lg overflow-hidden">
             {props.details.coverUrl && (
               <img
-                src={props.details.coverUrl}
+                src={props.details.coverUrl || Rhythma}
                 alt={`${props.details.title} cover`}
                 className="rounded-lg h-32 w-32 object-cover"
+                onError={(e) => (e.target.src = Rhythma)}
               />
             )}
           </div>
@@ -22,7 +27,7 @@ const Card = React.memo((props) => {
               href={props.mapLink}
               className="text-2xl hover:bg-neutral-400 duration-300 rounded-lg"
             >
-              {props.details.title}
+              {decodedTitle}
             </a>
             <p className="text-sm">
               {props.details.artist}
