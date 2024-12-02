@@ -74,7 +74,23 @@ async function osuApiRequest(url, params) {
     const response = await axios.get(url, { params });
     return response.data;
   } catch (error) {
-    console.error("Error calling osu API");
+    if (error.response) {
+      // Server responded with a status code outside the 2xx range
+      console.error("Error calling osu API:", {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers,
+      });
+    } else if (error.request) {
+      // Request was made but no response received
+      console.error("No response received from osu API:", error.request);
+    } else {
+      // Error occurred during setup
+      console.error("Error setting up request to osu API:", error.message);
+    }
+
+    // Re-throw the error to let the caller handle it
+    throw error;
   }
 }
 
@@ -241,7 +257,6 @@ app.get("/getBeatmapDetails", osuApiLimiter, async (req, res) => {
   const beatmapSetId = req.query.beatmapSetId;
   const uid = req.query.uid;
   const beatmapLink = req.query.beatmapLink;
-
   //Quick check to make sure we got the beatmapSetId
   if (!beatmapSetId) {
     res.json({ error: "Beatmap Retrieval Unsuccessful" }, { status: 404 });
@@ -258,10 +273,10 @@ app.get("/getBeatmapDetails", osuApiLimiter, async (req, res) => {
   try {
     //Running axios HTTP GET request with base url and parameters to get beatmap details
     const response = await osuApiRequest(url, params);
-    const beatmap = response.data[0];
 
     //Checking if we successfully got the beatmap details
-    if (beatmap) {
+    if (response.length > 0) {
+      const beatmap = response[0];
       return res.status(200).json({
         title: beatmap.title,
         creator: beatmap.creator,
