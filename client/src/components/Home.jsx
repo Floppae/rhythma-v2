@@ -18,7 +18,7 @@ const Home = () => {
     {
       name: "User Seif",
       pfp: userSeif,
-      uid: 123,
+      uid: process.env.REACT_APP_SEIFUID,
       link: "https://linktr.ee/UserSeif",
     },
     {
@@ -36,7 +36,7 @@ const Home = () => {
     {
       name: "Bleachy",
       pfp: bleachy,
-      uid: 789456,
+      uid: process.env.REACT_APP_BLEACHYUID,
       link: "https://linktr.ee/bleachyosu",
     },
     {
