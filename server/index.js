@@ -51,6 +51,19 @@ const db = new pg.Pool({
 
 db.connect();
 
+// Add after db.connect();
+db.query(
+  `
+  CREATE TABLE IF NOT EXISTS beatmap_details (
+    beatmap_id VARCHAR(255) PRIMARY KEY,
+    title VARCHAR(255),
+    creator VARCHAR(255),
+    artist VARCHAR(255),
+    cover_url TEXT
+  );
+`
+).catch((err) => console.error("Error creating beatmap_details table:", err));
+
 //caching data for uid's to optimize authorization process
 let adminSet = new Set(); // Cache for admin UIDs
 
@@ -262,101 +275,79 @@ app.get("/getBeatmapDetails", osuApiLimiter, async (req, res) => {
   const uid = req.query.uid;
   const beatmapLink = req.query.beatmapLink;
 
-  // Add logging
-  console.log("Received request:", {
-    beatmapSetId,
-    uid,
-    beatmapLink,
-  });
-
   if (!beatmapSetId) {
-    return res
-      .status(404)
-      .json({ error: "Beatmap Retrieval Unsuccessful - Missing beatmapSetId" });
-  }
-
-  const apiKey = process.env.OSU_API_KEY;
-  if (!apiKey) {
-    console.error("OSU_API_KEY is not set in environment variables");
-    return res
-      .status(500)
-      .json({ error: "Server configuration error - Missing API key" });
+    return res.status(404).json({ error: "Missing beatmapSetId" });
   }
 
   try {
-    // Check cache first
-    const cacheKey = `set${beatmapSetId}`;
-    const cachedData = await getCacheData(cacheKey);
+    // First try to get from database
+    const dbResult = await db.query(
+      "SELECT * FROM beatmap_details WHERE beatmap_id = $1",
+      [beatmapSetId]
+    );
 
-    console.log("Cache check result:", {
-      cacheKey,
-      hasCachedData: !!cachedData,
-      cachedData,
-    });
-
-    if (cachedData) {
-      // Add dynamic fields to cached data
-      const result = {
-        ...cachedData,
+    // If found in database, return it
+    if (dbResult.rows.length > 0) {
+      const details = dbResult.rows[0];
+      return res.status(200).json({
+        title: details.title,
+        creator: details.creator,
+        artist: details.artist,
+        coverUrl: details.cover_url,
         uid: uid,
         beatmapLink: beatmapLink.split(":")[0],
-      };
-      return res.status(200).json(result);
+      });
     }
 
-    const url = "https://osu.ppy.sh/api/get_beatmaps";
-    const params = {
-      k: apiKey,
-      s: beatmapSetId,
-    };
+    // If not in database, get from API
+    const apiKey = process.env.OSU_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "Server configuration error" });
+    }
 
-    // Log the API request
-    console.log("Cache miss - Making API request:", {
-      url,
-      beatmapSetId,
-    });
-
-    const response = await osuApiRequest(url, params);
+    const response = await osuApiRequest(
+      "https://osu.ppy.sh/api/get_beatmaps",
+      {
+        k: apiKey,
+        s: beatmapSetId,
+      }
+    );
 
     if (response.length > 0) {
       const beatmap = response[0];
-      // Store static data in cache
-      const cacheableData = {
+      const result = {
         title: beatmap.title,
         creator: beatmap.creator,
         artist: beatmap.artist,
         coverUrl: `https://assets.ppy.sh/beatmaps/${beatmap.beatmapset_id}/covers/cover.jpg`,
-      };
-
-      // Cache the static data
-      await setCacheData(cacheKey, cacheableData, 3600);
-
-      // Return complete response with dynamic fields
-      const result = {
-        ...cacheableData,
         uid: uid,
         beatmapLink: beatmapLink.split(":")[0],
       };
+
+      // Store in database for future use
+      await db.query(
+        `INSERT INTO beatmap_details (beatmap_id, title, creator, artist, cover_url)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (beatmap_id) DO UPDATE SET
+         title = EXCLUDED.title,
+         creator = EXCLUDED.creator,
+         artist = EXCLUDED.artist,
+         cover_url = EXCLUDED.cover_url`,
+        [
+          beatmapSetId,
+          beatmap.title,
+          beatmap.creator,
+          beatmap.artist,
+          result.coverUrl,
+        ]
+      );
+
       return res.status(200).json(result);
-    } else {
-      return res.status(404).json({
-        error: "Beatmap Retrieval Unsuccessful - No beatmap data found",
-      });
     }
+
+    return res.status(404).json({ error: "No beatmap data found" });
   } catch (error) {
-    console.error("Error in getBeatmapDetails:", {
-      message: error.message,
-      stack: error.stack,
-      response: error.response?.data,
-    });
-
-    if (error.response) {
-      return res.status(error.response.status).json({
-        error: "Osu API Error",
-        details: error.response.data,
-      });
-    }
-
+    console.error("Error in getBeatmapDetails:", error);
     return res.status(500).json({
       error: "Internal Server Error",
       message: error.message,
