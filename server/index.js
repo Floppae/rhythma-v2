@@ -51,19 +51,6 @@ const db = new pg.Pool({
 
 db.connect();
 
-// Add after db.connect();
-db.query(
-  `
-  CREATE TABLE IF NOT EXISTS beatmap_details (
-    beatmap_id VARCHAR(255) PRIMARY KEY,
-    title VARCHAR(255),
-    creator VARCHAR(255),
-    artist VARCHAR(255),
-    cover_url TEXT
-  );
-`
-).catch((err) => console.error("Error creating beatmap_details table:", err));
-
 //caching data for uid's to optimize authorization process
 let adminSet = new Set(); // Cache for admin UIDs
 
