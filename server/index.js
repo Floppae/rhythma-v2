@@ -13,6 +13,9 @@ dotenv.config({ path: ".env.local" });
 
 const app = express();
 
+// Trust proxy - required when running behind a reverse proxy like Render
+app.set("trust proxy", 1);
+
 app.use(
   cors({
     origin: ["http://localhost:3000", "https://www.rhythma.net"],
