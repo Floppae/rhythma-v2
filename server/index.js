@@ -73,26 +73,47 @@ async function osuApiRequest(url, params) {
   globalRequestCount++;
   console.log(`[REQUESTS SENT]: ${globalRequestCount}`);
   try {
+    console.log("[OSU API REQUEST] Sending request with params:", {
+      url,
+      beatmapSetId: params.s,
+      apiKeyPresent: !!params.k,
+    });
+
     const response = await axios.get(url, { params });
+    console.log("[OSU API RESPONSE] Success:", {
+      status: response.status,
+      dataLength: response.data?.length,
+      firstBeatmap: response.data?.[0] ? "Present" : "Not Present",
+    });
     return response.data;
   } catch (error) {
     if (error.response) {
       // Server responded with a status code outside the 2xx range
-      console.error("Error calling osu API:", {
+      console.error("[OSU API ERROR] Response error:", {
         status: error.response.status,
         data: error.response.data,
         headers: error.response.headers,
+        beatmapSetId: params.s,
+        url: url,
       });
     } else if (error.request) {
       // Request was made but no response received
-      console.error("No response received from osu API:", error.request);
+      console.error("[OSU API ERROR] No response:", {
+        request: error.request,
+        beatmapSetId: params.s,
+        url: url,
+      });
     } else {
       // Error occurred during setup
-      console.error("Error setting up request to osu API:", error.message);
+      console.error("[OSU API ERROR] Setup error:", {
+        message: error.message,
+        beatmapSetId: params.s,
+        url: url,
+      });
     }
 
-    // Re-throw the error to let the caller handle it
-    throw error;
+    // Re-throw with more context
+    throw new Error(`Osu API Error for beatmap ${params.s}: ${error.message}`);
   }
 }
 
@@ -118,7 +139,7 @@ async function setCacheData(key, value, ttlSeconds) {
 //OSU API RATE LIMITER Middleware
 const osuApiLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 100,
+  max: 200,
   message: "Too many requests to the osu! APi. Please try again in 1 minute.",
 });
 
@@ -266,21 +287,32 @@ app.get("/admins", async (req, res) => {
 });
 
 app.get("/getBeatmapDetails", osuApiLimiter, async (req, res) => {
-  //searchParams is a propety of URL object
-  //searchParams allows us to use .get to grab parameters we set when we called this endpoint
-  // const response = await axios.get("/getBeatmapDetails", {
-  //   params: { beatmapSetId },
-  // });
-  //Now, we can do searchParams.get("beatmapSetId") to extract setId from the url
   const beatmapSetId = req.query.beatmapSetId;
   const uid = req.query.uid;
   const beatmapLink = req.query.beatmapLink;
+
+  // Add logging
+  console.log("Received request:", {
+    beatmapSetId,
+    uid,
+    beatmapLink,
+  });
+
   //Quick check to make sure we got the beatmapSetId
   if (!beatmapSetId) {
-    res.json({ error: "Beatmap Retrieval Unsuccessful" }, { status: 404 });
+    return res
+      .status(404)
+      .json({ error: "Beatmap Retrieval Unsuccessful - Missing beatmapSetId" });
   }
 
   const apiKey = process.env.OSU_API_KEY;
+  if (!apiKey) {
+    console.error("OSU_API_KEY is not set in environment variables");
+    return res
+      .status(500)
+      .json({ error: "Server configuration error - Missing API key" });
+  }
+
   //Initializing base url and parameters to access osu api
   const url = "https://osu.ppy.sh/api/get_beatmaps";
   const params = {
@@ -296,10 +328,17 @@ app.get("/getBeatmapDetails", osuApiLimiter, async (req, res) => {
       return res.status(200).json(cachedData);
     }
 
+    // Log the API request
+    console.log("Making API request with params:", {
+      url,
+      beatmapSetId,
+      hasApiKey: !!apiKey,
+    });
+
     //Running axios HTTP GET request with base url and parameters to get beatmap details
     const response = await osuApiRequest(url, params);
 
-    //Checking if we successfully got the beatmap details
+    //If we get a response, we can set the beatmap details to the cache for 1 hour
     if (response.length > 0) {
       const beatmap = response[0];
       const result = {
@@ -308,15 +347,33 @@ app.get("/getBeatmapDetails", osuApiLimiter, async (req, res) => {
         artist: beatmap.artist,
         coverUrl: `https://assets.ppy.sh/beatmaps/${beatmap.beatmapset_id}/covers/cover.jpg`,
         uid: uid,
-        beatmapLink: beatmapLink,
+        beatmapLink: beatmapLink.split(":")[0],
       };
       await setCacheData(cacheKey, result, 3600); //1 hour ttl
       return res.status(200).json(result);
     } else {
-      return res.status(404).json({ error: "Beatmap Retrieval Unsuccessful" });
+      return res.status(404).json({
+        error: "Beatmap Retrieval Unsuccessful - No beatmap data found",
+      });
     }
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error in getBeatmapDetails:", {
+      message: error.message,
+      stack: error.stack,
+      response: error.response?.data,
+    });
+
+    if (error.response) {
+      return res.status(error.response.status).json({
+        error: "Osu API Error",
+        details: error.response.data,
+      });
+    }
+
+    return res.status(500).json({
+      error: "Internal Server Error",
+      message: error.message,
+    });
   }
 });
 
