@@ -54,27 +54,8 @@ db.connect();
 //caching data for uid's to optimize authorization process
 let adminSet = new Set(); // Cache for admin UIDs
 
-//Global Rate Limiting
-let globalRequestCount = 0;
-const globalRequestMax = 100;
-const resetInterval = 60 * 1000;
-
-//resets globalRequestCount after 1 minute
-setInterval(() => {
-  console.log("[RESETTING REQUEST COUNT]");
-  globalRequestCount = 0;
-}, resetInterval);
-
-//Function to check API rate limits before calling osu API
+//Function to make osu API requests
 async function osuApiRequest(url, params) {
-  if (globalRequestCount >= globalRequestMax) {
-    throw new Error(
-      "Global rate limit exceeded for osu! API. Try again in 1 minute."
-    );
-  }
-
-  globalRequestCount++;
-  console.log(`[REQUESTS SENT]: ${globalRequestCount}`);
   try {
     console.log("[OSU API REQUEST] Sending request with params:", {
       url,
@@ -83,40 +64,15 @@ async function osuApiRequest(url, params) {
     });
 
     const response = await axios.get(url, { params });
-    console.log("[OSU API RESPONSE] Success:", {
-      status: response.status,
-      dataLength: response.data?.length,
-      firstBeatmap: response.data?.[0] ? "Present" : "Not Present",
-    });
     return response.data;
   } catch (error) {
-    if (error.response) {
-      // Server responded with a status code outside the 2xx range
-      console.error("[OSU API ERROR] Response error:", {
-        status: error.response.status,
-        data: error.response.data,
-        headers: error.response.headers,
-        beatmapSetId: params.s,
-        url: url,
-      });
-    } else if (error.request) {
-      // Request was made but no response received
-      console.error("[OSU API ERROR] No response:", {
-        request: error.request,
-        beatmapSetId: params.s,
-        url: url,
-      });
-    } else {
-      // Error occurred during setup
-      console.error("[OSU API ERROR] Setup error:", {
-        message: error.message,
-        beatmapSetId: params.s,
-        url: url,
-      });
-    }
-
-    // Re-throw with more context
-    throw new Error(`Osu API Error for beatmap ${params.s}: ${error.message}`);
+    console.error("[OSU API ERROR]:", {
+      message: error.message,
+      beatmapSetId: params.s,
+      url: url,
+      response: error.response?.data,
+    });
+    throw error;
   }
 }
 
@@ -141,9 +97,15 @@ async function setCacheData(key, value, ttlSeconds) {
 
 //OSU API RATE LIMITER Middleware
 const osuApiLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 200,
-  message: "Too many requests to the osu! APi. Please try again in 1 minute.",
+  windowMs: 60 * 1000, // 1 minute
+  max: 300, // increased from 200 to handle more concurrent users
+  message: "Too many requests to the osu! API. Please try again in 1 minute.",
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  keyGenerator: (req) => {
+    // Use a combination of IP and UID for rate limiting
+    return req.query.uid ? `${req.ip}-${req.query.uid}` : req.ip;
+  },
 });
 
 // Preload Admins at Startup
