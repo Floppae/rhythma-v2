@@ -82,7 +82,13 @@ async function getCacheData(key) {
     "SELECT value FROM api_cache WHERE key = $1 AND expires_at > NOW()",
     [key]
   );
-  return result.rows[0]?.value || null;
+  try {
+    // Parse the JSON string from the database
+    return result.rows[0]?.value ? JSON.parse(result.rows[0].value) : null;
+  } catch (error) {
+    console.error("Error parsing cached data:", error);
+    return null;
+  }
 }
 
 //SET CACHE DATA
@@ -98,7 +104,7 @@ async function setCacheData(key, value, ttlSeconds) {
 //OSU API RATE LIMITER Middleware
 const osuApiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 300, // increased from 200 to handle more concurrent users
+  max: 1000, // increased from 200 to handle more concurrent users
   message: "Too many requests to the osu! API. Please try again in 1 minute.",
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
@@ -263,7 +269,6 @@ app.get("/getBeatmapDetails", osuApiLimiter, async (req, res) => {
     beatmapLink,
   });
 
-  //Quick check to make sure we got the beatmapSetId
   if (!beatmapSetId) {
     return res
       .status(404)
@@ -278,43 +283,60 @@ app.get("/getBeatmapDetails", osuApiLimiter, async (req, res) => {
       .json({ error: "Server configuration error - Missing API key" });
   }
 
-  //Initializing base url and parameters to access osu api
-  const url = "https://osu.ppy.sh/api/get_beatmaps";
-  const params = {
-    k: apiKey,
-    s: beatmapSetId,
-  };
-
   try {
-    //Check cache for beatmap details
-    const cacheKey = `set${beatmapSetId.toString()}`;
+    // Check cache first
+    const cacheKey = `set${beatmapSetId}`;
     const cachedData = await getCacheData(cacheKey);
-    if (cachedData) {
-      return res.status(200).json(cachedData);
-    }
 
-    // Log the API request
-    console.log("Making API request with params:", {
-      url,
-      beatmapSetId,
-      hasApiKey: !!apiKey,
+    console.log("Cache check result:", {
+      cacheKey,
+      hasCachedData: !!cachedData,
+      cachedData,
     });
 
-    //Running axios HTTP GET request with base url and parameters to get beatmap details
+    if (cachedData) {
+      // Add dynamic fields to cached data
+      const result = {
+        ...cachedData,
+        uid: uid,
+        beatmapLink: beatmapLink.split(":")[0],
+      };
+      return res.status(200).json(result);
+    }
+
+    const url = "https://osu.ppy.sh/api/get_beatmaps";
+    const params = {
+      k: apiKey,
+      s: beatmapSetId,
+    };
+
+    // Log the API request
+    console.log("Cache miss - Making API request:", {
+      url,
+      beatmapSetId,
+    });
+
     const response = await osuApiRequest(url, params);
 
-    //If we get a response, we can set the beatmap details to the cache for 1 hour
     if (response.length > 0) {
       const beatmap = response[0];
-      const result = {
+      // Store static data in cache
+      const cacheableData = {
         title: beatmap.title,
         creator: beatmap.creator,
         artist: beatmap.artist,
         coverUrl: `https://assets.ppy.sh/beatmaps/${beatmap.beatmapset_id}/covers/cover.jpg`,
+      };
+
+      // Cache the static data
+      await setCacheData(cacheKey, cacheableData, 3600);
+
+      // Return complete response with dynamic fields
+      const result = {
+        ...cacheableData,
         uid: uid,
         beatmapLink: beatmapLink.split(":")[0],
       };
-      await setCacheData(cacheKey, result, 3600); //1 hour ttl
       return res.status(200).json(result);
     } else {
       return res.status(404).json({
