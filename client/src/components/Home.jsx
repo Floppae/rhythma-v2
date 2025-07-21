@@ -13,6 +13,7 @@ const Home = () => {
 
   const [maps, setMaps] = useState([]);
   const [mapDetails, setMapDetails] = useState({});
+  const [search, setSearch] = useState("");
 
   const creators = [
     {
@@ -161,6 +162,20 @@ const Home = () => {
     }
   }
 
+  const filteredMaps = maps.filter(({ id }) => {
+    const details = mapDetails[id];
+    if (!details) {
+      return false;
+    }
+
+    const searchLower = search.toLowerCase();
+    return (
+      details.title?.toLowerCase().includes(searchLower) ||
+      details.artist?.toLowerCase().includes(searchLower) ||
+      details.creator?.toLowerCase().includes(searchLower)
+    );
+  });
+
   useEffect(() => {
     getMaps();
   }, []);
@@ -171,9 +186,11 @@ const Home = () => {
   function handleClick(creator) {
     navigate("/creator", { state: { creator } });
   }
-
   function handleLogin() {
     navigate("/login");
+  }
+  function handleChange(event) {
+    setSearch(event.target.value);
   }
 
   return (
@@ -192,7 +209,7 @@ const Home = () => {
           <h1>Meet our Creators</h1>
         </div> */}
         <h1 className="text-3xl text-neutral-400 flex justify-center pt-5">
-          Meet Our Founders
+          Partnered Creators
         </h1>
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 justify-items-center items-start p-10">
           {creators.map((creator, index) => (
@@ -213,8 +230,19 @@ const Home = () => {
           ))}
         </div>
       </div>
+      <div className="w-8/12 flex flex-col items-center md:flex-row justify-between">
+        <h1 className="text-3xl text-neutral-400 flex justify-center pt-5 w-1/4 text-left mb-10">
+          Beatmap Collection
+        </h1>
+        <input
+          onChange={handleChange}
+          placeholder="Search"
+          className="w-1/4 border-2 border-solid border-neutral-500 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black p-4 rounded-lg bg-gradient-to-r from-neutral-900 via-neutral-700 to-neutral-900 mb-10"
+        ></input>
+      </div>
+
       <div className="border-2 border-solid border-neutral-500 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black bg-gradient-to-r from-neutral-900 via-neutral-700 to-neutral-900 rounded-lg w-8/12 p-12 text-white text-2xl overflow-auto grid grid-cols-1 md:grid-cols-2 gap-5">
-        {maps.map(({ id, mapLink }, index) => (
+        {filteredMaps.map(({ id, mapLink }, index) => (
           <Card
             details={mapDetails[id]}
             key={index}
