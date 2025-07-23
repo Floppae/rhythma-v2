@@ -195,10 +195,10 @@ const Maps = () => {
   }
 
   return (
-    <div className="text-white min-w-screen min-h-screen bg-black flex flex-col items-center justify-center">
+    <div className="text-white min-w-screen min-h-screen bg-banner2 bg-fixed bg-cover flex flex-col items-center justify-center">
       <NavBar />
       <div className="flex flex-col w-1/2 h-1/4 items-center justify-center p-5 mt-10 rounded-lg shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] border-2 border-solid border-neutral-500 bg-stone-900">
-        <p className="text-2xl text-center text-neutral-400">
+        <p className="text-2xl text-center text-white">
           Connecting Creators And Community With Music
         </p>
       </div>
