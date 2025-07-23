@@ -136,7 +136,7 @@ const CreatorPage = () => {
   }, [maps]);
 
   return (
-    <div className="w-screen h-screen bg-gradient-to-r from-black via-neutral-600 to-black flex flex-col items-center">
+    <div className="w-screen h-screen bg-gradient-to-br from-stone-700 via-stone-800 to-stone-900 flex flex-col items-center">
       <div className="h-2/12 w-10/12 py-5 text-white text-2xl flex justify-between">
         <div className="flex">
           <a
