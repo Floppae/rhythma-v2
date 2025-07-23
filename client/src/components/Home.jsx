@@ -82,20 +82,22 @@ const Home = () => {
   }
 
   return (
-    <div className="text-white min-w-screen min-h-screen bg-gradient-to-br from-stone-700 via-stone-800 to-stone-900 flex flex-col items-center">
+    <div className="text-white min-w-screen min-h-screen bg-black flex flex-col items-center">
       <NavBar />
-      <div className="flex flex-col items-center w-8/12 h-1/4 p-10 mt-10 rounded-lg shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] border-2 border-solid border-neutral-500 bg-gradient-to-br from-stone-700 via-stone-800 to-stone-800">
+      <div className="flex flex-col items-center w-8/12 h-1/4 p-10 mt-10 rounded-lg shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] border-2 border-solid border-neutral-700 bg-gradient-to-t from-stone-700 via-stone-800 to-stone-900">
         <h1 className="text-4xl">File Hosting Made Simple</h1>
         <br></br>
-        <p className="text-lg text-neutral-400 text-center">
+        <p className="text-lg text-stone-400 text-center">
           <p>
             Designed by Creators<p> Tailored For You</p>
           </p>
         </p>
       </div>
-      <div className="flex flex-col flex-grow w-8/12 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black from-neutral-900 via-neutral-500 to-neutral-900 rounded-lg m-10 p-10 justify-center border-2 border-solid border-neutral-500">
+      <div className="flex flex-col flex-grow w-8/12 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black from-neutral-900 via-neutral-500 to-neutral-900 rounded-lg m-10 p-10 justify-center border-2 border-solid border-neutral-700 bg-gradient-to-b from-stone-700 via-stone-800 to-stone-900">
         <div className="w-full flex flex-col gap-8">
-          <h1 className="text-4xl text-center mb-5">Partnered Creators</h1>
+          <h1 className="text-4xl text-white text-center mb-5">
+            Partnered Creators
+          </h1>
           {creators.map((creator, index) => (
             <div
               key={index}
@@ -108,7 +110,7 @@ const Home = () => {
                 <>
                   <button
                     onClick={() => handleClick(creator)}
-                    className="w-2/3 mx-10 border-2 border-solid border-neutral-500 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black bg-transparent rounded-lg flex flex-col items-center justify-center p-5 hover:bg-neutral-500 hover:-translate-y-3 hover:shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] hover:shadow-white duration-300 hover:text-white bg-gradient-to-br from-stone-800 via-stone-800 to-stone-700"
+                    className="w-2/3 mx-10 border-2 border-solid border-neutral-700 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black rounded-lg flex flex-col items-center justify-center p-5 hover:bg-neutral-500 hover:-translate-y-3 hover:shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] hover:shadow-white duration-300 hover:text-white bg-gradient-to-br from-stone-800 via-stone-800 to-stone-700"
                     name={creator.name}
                     value={creator.uid}
                   >
@@ -117,13 +119,12 @@ const Home = () => {
                       src={creator.pfp}
                       alt="creator image"
                     />
-                    <p>{creator.name}</p>
                   </button>
-                  <div className="w-full flex flex-col items-start max-w-md">
+                  <div className="w-full flex flex-col items-center max-w-md pr-10">
                     <h3 className="md:text-3xl font-bold mb-2">
                       {creator.name}
                     </h3>
-                    <ul className="flex flex-col md:text-xl text-neutral-400">
+                    <ul className="flex flex-col md:text-xl text-white">
                       <li className="flex gap-2">
                         <a href={creator.tiktok}>
                           <AiFillTikTok />
@@ -148,11 +149,11 @@ const Home = () => {
               ) : (
                 /* For odd indices (1, 3, 5...) - text left, image right */
                 <>
-                  <div className="w-full flex flex-col items-end max-w-md">
-                    <h3 className="md:text-2xl font-bold mb-2">
+                  <div className="w-full flex flex-col items-center max-w-md pl-10">
+                    <h3 className="md:text-3xl font-bold mb-2">
                       {creator.name}
                     </h3>
-                    <ul className="flex flex-col md:text-xl text-neutral-400">
+                    <ul className="flex flex-col md:text-xl text-white">
                       <li className="flex gap-2">
                         <a href={creator.tiktok}>
                           <AiFillTikTok />
@@ -175,7 +176,7 @@ const Home = () => {
                   </div>
                   <button
                     onClick={() => handleClick(creator)}
-                    className="w-2/3 mx-10 border-2 border-solid border-neutral-500 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black bg-transparent rounded-lg flex flex-col items-center justify-center p-5 hover:bg-neutral-500 hover:-translate-y-3 hover:shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] hover:shadow-white duration-300 hover:text-white bg-gradient-to-br from-stone-800 via-stone-800 to-stone-700"
+                    className="w-2/3 mx-10 border-2 border-solid border-neutral-700 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black bg-transparent rounded-lg flex flex-col items-center justify-center p-5 hover:bg-neutral-500 hover:-translate-y-3 hover:shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] hover:shadow-white duration-300 hover:text-white bg-gradient-to-br from-stone-800 via-stone-800 to-stone-700"
                     name={creator.name}
                     value={creator.uid}
                   >
@@ -184,7 +185,6 @@ const Home = () => {
                       src={creator.pfp}
                       alt="creator image"
                     />
-                    <p>{creator.name}</p>
                   </button>
                 </>
               )}

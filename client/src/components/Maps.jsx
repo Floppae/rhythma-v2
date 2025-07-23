@@ -195,14 +195,14 @@ const Maps = () => {
   }
 
   return (
-    <div className="text-white min-w-screen min-h-screen bg-gradient-to-br from-stone-700 via-stone-800 to-stone-900 flex flex-col items-center justify-center">
+    <div className="text-white min-w-screen min-h-screen bg-black flex flex-col items-center justify-center">
       <NavBar />
-      <div className="flex flex-col w-1/2 h-1/4 items-center justify-center p-5 mt-10 rounded-lg shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] border-2 border-solid border-neutral-500">
+      <div className="flex flex-col w-1/2 h-1/4 items-center justify-center p-5 mt-10 rounded-lg shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] border-2 border-solid border-neutral-500 bg-stone-900">
         <p className="text-2xl text-center text-neutral-400">
           Connecting Creators And Community With Music
         </p>
       </div>
-      <div className="flex flex-col flex-grow w-8/12 text-neutral-400 text-2xl shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black from-neutral-900 via-neutral-500 to-neutral-900 rounded-lg m-10 justify-center border-2 border-solid border-neutral-500">
+      <div className="flex flex-col flex-grow w-8/12 text-neutral-400 text-2xl shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black from-neutral-900 via-neutral-500 to-neutral-900 rounded-lg m-10 justify-center border-2 border-solid border-neutral-500 bg-gradient-to-b from-stone-900 via-stone-800 to-stone-700">
         {/* <div className="flex w-1/4 h-72 items-center justify-center">
             <img className="w-48 rounded-full" src={Rhythma} />
           </div> */}
@@ -230,7 +230,7 @@ const Maps = () => {
         </div>
       </div>
       <div className="w-8/12 flex flex-col items-center md:flex-row justify-between">
-        <h1 className="text-3xl text-neutral-400 flex justify-center pt-5 w-1/4 text-left mb-10">
+        <h1 className="text-3xl text-white flex justify-center pt-5 w-1/4 text-left mb-10">
           Beatmap Collection
         </h1>
         <input
@@ -240,7 +240,7 @@ const Maps = () => {
         ></input>
       </div>
 
-      <div className="border-2 border-solid border-neutral-500 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black bg-gradient-to-br from-stone-700 via-stone-800 to-stone-900 rounded-lg w-8/12 p-12 text-white text-2xl overflow-auto grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="border-2 border-solid border-neutral-500 shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px] shadow-black bg-gradient-to-b from-stone-700 via-stone-800 to-stone-900 rounded-lg w-8/12 p-12 text-white text-2xl overflow-auto grid grid-cols-1 md:grid-cols-2 gap-5">
         {filteredMaps.map(({ id, mapLink }, index) => (
           <Card
             details={mapDetails[id]}
