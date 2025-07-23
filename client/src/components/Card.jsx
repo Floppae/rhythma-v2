@@ -8,7 +8,7 @@ const Card = React.memo((props) => {
   return (
     <div
       key={props.index}
-      className="w-full py-5 flex justify-between mb-10 bg-gradient-to-l from-black to-neutral-700 rounded-lg h-32 content-center items-center overflow-hidden shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px]"
+      className="w-full py-5 flex justify-between mb-10 bg-gradient-to-br from-stone-900 via-stone-800 to-stone-700 rounded-lg h-32 content-center items-center overflow-hidden shadow-[rgba(0,0,15,0.5)_0px_5px_25px_5px]"
     >
       {props.details && (
         <>
